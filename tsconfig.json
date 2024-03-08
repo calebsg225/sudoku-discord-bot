@@ -1,0 +1,13 @@
+{
+  "compilerOptions": {
+    "typeRoots": ["node_modules/@types", "src/@types"],
+    "resolveJsonModule": true,
+    "module": "ES2022",
+    "esModuleInterop": true,
+    "target": "ES2022",
+    "moduleResolution": "node",
+    "forceConsistentCasingInFileNames": true,
+    "strict": true,
+  },
+  "lib": ["ES2022"]
+}
