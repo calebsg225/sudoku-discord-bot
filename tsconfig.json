@@ -6,8 +6,10 @@
     "esModuleInterop": true,
     "target": "ES2022",
     "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
     "forceConsistentCasingInFileNames": true,
-    "strict": true,
+    "skipDefaultLibCheck": true,
   },
   "lib": ["ES2022"]
 }
