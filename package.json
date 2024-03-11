@@ -4,7 +4,9 @@
   "description": "sudoku bot for discord using discord.js and typescript",
   "main": "index.js",
   "scripts": {
-    "start": "npx tsx watch src/index.ts"
+    "start": "npx tsx watch src/index.ts",
+    "dev": "npx tsx src/deploy/devDeploy.ts",
+    "global": "npx tsx src/deploy/golbalDeploy.ts"
   },
   "author": "calebsg225",
   "license": "ISC",
