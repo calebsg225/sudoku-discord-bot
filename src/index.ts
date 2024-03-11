@@ -1,11 +1,11 @@
 import { Client, GatewayIntentBits } from "discord.js";
 import chalk from "chalk";
-import { BotToken } from "../config.json";
+import { BotToken, DatabaseAddress } from "../config.json";
 
 import listeners from "./listeners/listeners";
 
 import mongoose from "mongoose";
-const { connection } = mongoose;
+const { connect, connection } = mongoose;
 
 console.log(chalk.yellow(`Bot is starting...`));
 
@@ -20,4 +20,10 @@ DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord Android";
 // activate event listeners
 listeners(client, connection);
 
+// connect to database
+(async () => {
+  await connect(DatabaseAddress).catch(console.error);
+})();
+
+// start bot
 client.login(BotToken);
