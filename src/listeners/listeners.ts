@@ -1,13 +1,16 @@
 import { Client } from "discord.js";
 import mongoose from "mongoose";
 
-// discord events
-import { ready } from "./discord/ready";
-
 // mongo events
 import mongoEvents from "./mongo/ConnectionEvents";
 
-const discordEvents = [ready];
+// discord events
+import { ready } from "./discord/ready";
+import { interactionCreate } from "./discord/interactionCreate";
+
+const discordEvents = [
+  ready, interactionCreate
+];
 
 // run all event listeners
 export default (client: Client, connection: mongoose.Connection) => {
