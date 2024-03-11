@@ -30,7 +30,7 @@ const handleSlashCommands = async (interaction: ChatInputCommandInteraction) => 
   } catch (err) {
     console.error(chalk.red(err));
     const reply = {
-      content: `There was an issue running the command \`${command.name}\`.`,
+      content: `There was an issue running the command \`${command.data.name}\`.`,
       ephemeral: true
     }
     if (interaction.deferred || interaction.replied) {
