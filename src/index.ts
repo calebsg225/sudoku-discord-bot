@@ -1,4 +1,4 @@
-import { Client, GatewayIntentBits } from "discord.js";
+import { Client, GatewayIntentBits, Collection } from "discord.js";
 import chalk from "chalk";
 import { BotToken, DatabaseAddress } from "../config.json";
 
@@ -18,6 +18,12 @@ DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord Android";
 
 // mount commands to client
 client.commands = commands;
+
+// command cooldowns
+client.cooldowns = new Collection;
+
+// active sudoku games
+client.sudokuSessions = new Collection;
 
 // activate event listeners
 listeners(client, connection);
