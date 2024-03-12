@@ -1,0 +1,1 @@
+// reset current sudoku with the starting puzzle
