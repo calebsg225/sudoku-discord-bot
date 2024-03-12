@@ -4,6 +4,10 @@ class SudokuIamgeHandler {
   constructor() {
     this.font = 'Roboto Mono'
   }
+
+  createCanvasBase = () => {}
+
+  populateCanvas = () => {}
 }
 
 export default SudokuIamgeHandler;

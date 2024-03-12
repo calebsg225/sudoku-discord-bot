@@ -42,6 +42,22 @@ class SudokuHandler {
     const randomLine = lines[Math.floor(Math.random() * lines.length)];
     this.puzzleData.defaultPuzzle = randomLine.substring(13, 94);
   }
+
+  placeDigit = (row: number, column: number, digit: number) => {}
+
+  removeDigit = (row: number, column: number) => {}
+
+  highlightDigit = (digit: number) => {}
+
+  private getDigitIndicies = (digitL: number) => {}
+
+  pencil = (row: number, column: number, digit: number) => {}
+
+  resetPuzzle = () => {}
+
+  solveSudoku = () => {}
+
+  changeDifficulty = (difficulty: string) => {}
   
 }
 

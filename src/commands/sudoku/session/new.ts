@@ -5,11 +5,7 @@ import { SlashCommandBuilder } from "discord.js";
 
 import SudokuHandler from "../../../model/sudoku/sudokuHandler";
 
-const difficultyChoices = [
-  { name: 'Easy', value: 'Easy' },
-  { name: 'Medium', value: 'Medium' },
-  { name: 'Hard', value: 'Hard' },
-  { name: 'Diabolical', value: 'Diabolical' }]
+import { difficultyChoices } from "../../../model/sudoku/choices";
 
 export const _new: SlashCommand = {
   path: `sudoku/session`,
