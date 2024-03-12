@@ -34,6 +34,8 @@ export default (global: boolean) => {
         }
       }
       console.log(chalk.white(`[Deployment Status] Deployed. ${commandData.length} of ${commands.size} commands.`));
-    } catch (error) {}
+    } catch (error) {
+      console.error(chalk.red(error));
+    }
   })();
 }
