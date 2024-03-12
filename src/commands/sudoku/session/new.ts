@@ -20,10 +20,15 @@ export const _new: SlashCommand = {
     ),
   execute: async (interaction) => {
     // verify here
+    const userId = interaction.user.id;
+
+    if (interaction.client.sudokuSessions.has(userId)) {
+      return interaction.reply({
+        content: `You are not in a sudoku session.\n Please use \`/sudoku\` to begin a session.`,
+        ephemeral: true
+      });
+    }
     await interaction.deferReply();
-    const difficulty = interaction.options.getString('difficulty', true);
-    const sudoku = new SudokuHandler(difficulty);
-    sudoku.getRandomLine();
-    await interaction.editReply(sudoku.puzzleData.defaultPuzzle);
+    
   }
 }

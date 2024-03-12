@@ -1,5 +1,6 @@
 import SudokuIamgeHandler from "./sudokuImageGeneration";
 import SudokuSolver from "./sudokuSolver";
+import SudokuDatabaseHandler from "./sudokuDatabase";
 
 import { Message } from "discord.js";
 
@@ -12,6 +13,7 @@ const sudokuPuzzlePath = "./src/data/sudokuPuzzles/";
 class SudokuHandler {
   imageHandler: SudokuIamgeHandler;
   solver: SudokuSolver;
+  database: SudokuDatabaseHandler;
   
   message: Message; // discord message of previous sudoku image
 
@@ -20,17 +22,20 @@ class SudokuHandler {
   puzzleData: {
     difficulty: string,
     defaultPuzzle: string,
-    currentPuzzle: string
+    currentPuzzle: string,
+    pencilMarkings: string
   }
 
-  constructor(difficulty: string, theme: string = 'default') {
-    this.imageHandler = new SudokuIamgeHandler(theme); // class to handle sudoku image
+  constructor(difficulty: string, userId: string) {
+    this.imageHandler = new SudokuIamgeHandler; // class to handle sudoku image
     this.solver = new SudokuSolver; // class to handle puzzle checking and solving
+    this.database = new SudokuDatabaseHandler(userId);
 
     this.puzzleData = {
       difficulty: difficulty,
       defaultPuzzle: ``,
-      currentPuzzle: ``
+      currentPuzzle: ``,
+      pencilMarkings: "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
     }
 
     this.message;
@@ -62,6 +67,7 @@ class SudokuHandler {
   changeDifficulty = (difficulty: string) => {}
 
   changeTheme = (theme: string) => {
+    this.database.changeTheme(theme);
     this.imageHandler.changeTheme(theme);
   }
   

@@ -3,12 +3,17 @@ import sudokuThemes from "../../data/sudokuThemes.json";
 
 class SudokuIamgeHandler {
   font: string;
-
   theme: string;
 
-  constructor(theme: string) {
+  width: number;
+  borderThickness: number;
+
+  base: Canvas.Canvas;
+  board: Canvas.Canvas;
+
+  constructor() {
     this.font = 'Roboto Mono';
-    this.theme = theme;
+    this.theme = 'default';
   }
 
   createCanvasBase = (): Canvas.Canvas => {

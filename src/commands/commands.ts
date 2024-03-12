@@ -12,4 +12,9 @@ const commands = new Collection<string, SlashCommand>()
   .set(reload.data.name, reload)
   .set(_new.data.name, _new)
 
+// remove certain commands from global deployment
+export const excludeCommands = new Set([
+  reload
+]);
+
 export default commands;

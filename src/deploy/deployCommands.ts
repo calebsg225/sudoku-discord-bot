@@ -3,13 +3,14 @@
 import { REST, RESTPostAPIApplicationGuildCommandsJSONBody, Routes } from "discord.js";
 import chalk from "chalk";
 import { BotToken, ClientId, DevGuildIds } from "../../config.json";
-import commands from "../commands/commands";
+import commands, { excludeCommands } from "../commands/commands";
 
 export default (global: boolean) => {
   const commandData: RESTPostAPIApplicationGuildCommandsJSONBody[] = [];
 
   // load commands to deploy
   commands.forEach((v, k) => {
+    if (global && excludeCommands.has(v)) return;
     commandData.push(v.data.toJSON());
   });
 
