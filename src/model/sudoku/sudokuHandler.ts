@@ -13,7 +13,7 @@ class SudokuHandler {
   imageHandler: SudokuIamgeHandler;
   solver: SudokuSolver;
   
-  message: Message // discord message of previous sudoku image
+  message: Message; // discord message of previous sudoku image
 
   board: Canvas.Canvas;
 
@@ -23,8 +23,8 @@ class SudokuHandler {
     currentPuzzle: string
   }
 
-  constructor(difficulty: string) {
-    this.imageHandler = new SudokuIamgeHandler; // class to handle sudoku image
+  constructor(difficulty: string, theme: string = 'default') {
+    this.imageHandler = new SudokuIamgeHandler(theme); // class to handle sudoku image
     this.solver = new SudokuSolver; // class to handle puzzle checking and solving
 
     this.puzzleData = {
@@ -34,6 +34,8 @@ class SudokuHandler {
     }
 
     this.message;
+
+    this.board = this.imageHandler.createCanvasBase();
   }
 
   // sets new sudoku puzzle
@@ -58,6 +60,10 @@ class SudokuHandler {
   solveSudoku = () => {}
 
   changeDifficulty = (difficulty: string) => {}
+
+  changeTheme = (theme: string) => {
+    this.imageHandler.changeTheme(theme);
+  }
   
 }
 
