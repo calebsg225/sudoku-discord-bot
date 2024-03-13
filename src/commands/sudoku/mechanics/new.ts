@@ -41,7 +41,7 @@ export const _new: SlashCommand = {
     await sudokuSession.message.delete();
 
     // create new sudoku embed
-    const reply = await sudokuSession.generateReply(message, true);
+    const reply = await sudokuSession.generateReply(message);
 
     await interaction.editReply(reply);
 

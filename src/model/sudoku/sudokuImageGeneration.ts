@@ -1,7 +1,6 @@
 import Canvas from "@napi-rs/canvas";
-import { Theme } from "./types/sudokuTypes";
+import { PuzzleData, Theme } from "./types/sudokuTypes";
 import sudokuThemesImport from "../../data/sudokuThemes.json";
-import { resourceLimits } from "worker_threads";
 
 // is there a better way to do this??
 const sudokuThemes: {[theme: string]: Theme} = sudokuThemesImport;
@@ -28,7 +27,7 @@ class SudokuIamgeHandler {
   }
 
   // create empty sudoku board
-  createBase = (theme: string) => {
+  private createBase = (theme: string) => {
     this.base = Canvas.createCanvas(this.width, this.width);
     const ctx = this.base.getContext(this.context);
 
@@ -90,15 +89,20 @@ class SudokuIamgeHandler {
   }
 
   // fill empty board with new puzzle data
-  populateBoard = (theme: string, puzzle: string, pencilMarkings: string): void => {
+  private populateBoard = (theme: string, puzzleData: PuzzleData): void => {
+    const { currentPuzzle: puzzle, pencilMarkings: marks } = puzzleData;
     this.board = this.base;
+
+    // fill in main digits
+
+    // fill in pencil markings
   }
 
   updateCanvas = () => {}
 
-  // update theme when theme command is used
-  changeTheme = (theme: string): void => {
+  regenerate = (theme: string, puzzleData: PuzzleData) => {
     this.createBase(theme);
+    this.populateBoard(theme, puzzleData);
   }
 }
 

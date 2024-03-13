@@ -15,7 +15,9 @@ class SudokuHandler {
   private database: SudokuDatabaseHandler;
   
   message: Message; // discord message of previous sudoku image
-  user: User;
+  user: User; // user the session belongs to
+
+  regenerate: boolean; // set to true if theme changes or a new game is created
 
   private puzzleData: PuzzleData;
 
@@ -28,11 +30,13 @@ class SudokuHandler {
     
     this.message = message;
     this.user = user;
+
+    this.regenerate = true;
   }
 
   // run async functions when first creating a new session
   init = async (): Promise<InteractionReplyOptions> => {
-    return await this.generateSudokuEmbed(true);
+    return await this.generateSudokuEmbed();
   }
 
   private getNewLine = (difficulty: string) => {
@@ -43,6 +47,7 @@ class SudokuHandler {
 
   // sets new sudoku puzzle
   generateNewPuzzle = (difficulty: string) => {
+    this.regenerate = true;
     const puzzle = this.getNewLine(difficulty);
     this.puzzleData = {
       difficulty: difficulty,
@@ -52,11 +57,14 @@ class SudokuHandler {
     }
   }
 
-  private generateSudokuEmbed = async (newSudoku: boolean = false): Promise<InteractionReplyOptions> => {
+  // creates updated embed containing the sudoku game
+  private generateSudokuEmbed = async (): Promise<InteractionReplyOptions> => {
     const theme = await this.database.getTheme();
-    if (newSudoku) {
-      this.imageHandler.createBase(theme);
-      this.imageHandler.populateBoard(theme, this.puzzleData.currentPuzzle, this.puzzleData.pencilMarkings);
+
+    // regenerate sudoku game if theme changes or a new game is made
+    if (this.regenerate) {
+      this.imageHandler.regenerate(theme, this.puzzleData);
+      this.regenerate = false;
     }
     const board = this.imageHandler.createBoard(theme);
     const attachment = new AttachmentBuilder(await board.encode('png'), { name: "sudoku.png" });
@@ -87,18 +95,18 @@ class SudokuHandler {
 
   solveSudoku = () => {}
 
-  generateReply = async (message: Message, newSudoku: boolean = false) => {
+  generateReply = async (message: Message) => {
     this.message = message;
-    return await this.generateSudokuEmbed(newSudoku);
+    return await this.generateSudokuEmbed();
   }
 
   changeDifficulty = (difficulty: string) => {}
 
   // updates database and session with new theme
   changeTheme = async (theme: string): Promise<InteractionReplyOptions> => {
-    this.imageHandler.changeTheme(theme);
+    this.regenerate = true;
     await this.database.changeTheme(theme);
-    return await this.generateSudokuEmbed(true);
+    return await this.generateSudokuEmbed();
   }
   
 }

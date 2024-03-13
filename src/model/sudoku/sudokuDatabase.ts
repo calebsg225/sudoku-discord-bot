@@ -31,11 +31,13 @@ class SudokuDatabaseHandler {
     }).save().catch(console.error);
   }
 
+  // get current theme from user preferences
   getTheme = async (): Promise<string> => {
     const sudokuUserData = await SudokuUsers.findOne({discordUserId: this.userId});
     return sudokuUserData.preferences.theme;
   }
 
+  // update user preferences with new theme
   changeTheme = async (theme: string): Promise<void> => {
     await SudokuUsers.updateOne({discordUserId: this.userId}, {$set: {preferences: {theme: theme}}});
   }
