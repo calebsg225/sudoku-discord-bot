@@ -35,10 +35,11 @@ export const _new: SlashCommand = {
     // get user session data
     const sudokuSession = interaction.client.sudokuSessions.get(userId);
 
-    sudokuSession.getRandomLine(difficulty);
+    // generate a new puzzle
+    sudokuSession.generateNewPuzzle(difficulty);
 
     await sudokuSession.message.delete();
-    
+
     // create new sudoku embed
     const reply = await sudokuSession.generateReply(message);
 
