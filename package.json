@@ -6,7 +6,7 @@
   "scripts": {
     "start": "npx tsx watch src/index.ts",
     "dev": "npx tsx src/deploy/devDeploy.ts",
-    "global": "npx tsx src/deploy/golbalDeploy.ts"
+    "global": "npx tsx src/deploy/globalDeploy.ts"
   },
   "keywords": [
     "typescript",

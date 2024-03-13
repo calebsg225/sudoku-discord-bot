@@ -1,9 +1,18 @@
 {
-  "default": {
+  "dark": {
+    "id": "0",
     "background": "#000000",
     "base": "#414141",
     "inputDigit": "#4e2e2e",
     "highlightDigit": "b5b5b5",
     "solvedDigit": "#376839"
+  },
+  "light": {
+    "id": "1",
+    "background": "#FFFFFF",
+    "base": "#000000",
+    "inputDigit": "#3a4bcb",
+    "highlightDigit": "828282",
+    "solvedDigit": "376839"
   }
 }

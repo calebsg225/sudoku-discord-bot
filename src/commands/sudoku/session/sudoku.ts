@@ -12,6 +12,7 @@ export const sudoku: SlashCommand = {
   data: new SlashCommandBuilder()
     .setName('sudoku')
     .setDescription('Begin a sudoku session!')
+    .setDMPermission(false)
     .addStringOption(option =>
       option.setName('difficulty')
         .setDescription('difficulty of sudoku puzzle')
@@ -20,9 +21,9 @@ export const sudoku: SlashCommand = {
     )
   ,
   execute: async (interaction) => {
-    const userId = interaction.user.id;
+    const user = interaction.user;
 
-    if (interaction.client.sudokuSessions.has(userId)) {
+    if (interaction.client.sudokuSessions.has(user.id)) {
       return interaction.reply({
         content: `You have already begun a sudoku session!`,
         ephemeral: true
@@ -34,10 +35,11 @@ export const sudoku: SlashCommand = {
 
     const difficulty = interaction.options.getString('difficulty', true);
 
-    const sudokuSession = new SudokuHandler(difficulty, userId, message);
-    const reply = await sudokuSession.generateReply(interaction.user.displayName, message);
+    // create new sudoku session
+    const sudokuSession = new SudokuHandler(user, difficulty, message);
+    const reply = await sudokuSession.init();
 
-    interaction.client.sudokuSessions.set(userId, sudokuSession);
+    interaction.client.sudokuSessions.set(user.id, sudokuSession);
 
     await interaction.editReply(reply);
   }

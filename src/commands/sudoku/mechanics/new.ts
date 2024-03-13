@@ -3,15 +3,14 @@
 import SlashCommand from "../../_interface/SlashCommand";
 import { SlashCommandBuilder } from "discord.js";
 
-import SudokuHandler from "../../../model/sudoku/sudokuHandler";
-
 import { difficultyChoices } from "../../../model/sudoku/choices";
 
 export const _new: SlashCommand = {
-  path: `sudoku/session`,
+  path: `sudoku/mechanics`,
   data: new SlashCommandBuilder()
     .setName('new')
     .setDescription('generate a new sudoku puzzle')
+    .setDMPermission(false)
     .addStringOption(option =>
       option.setName('difficulty')
         .setDescription('difficulty of the new sudoku puzzle')
@@ -31,13 +30,18 @@ export const _new: SlashCommand = {
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
+    const difficulty = interaction.options.getString('difficulty', true);
+
     // get user session data
     const sudokuSession = interaction.client.sudokuSessions.get(userId);
 
-    sudokuSession.getRandomLine();
-    // create new sudoku image here
+    sudokuSession.getRandomLine(difficulty);
+
     await sudokuSession.message.delete();
-    const reply = await sudokuSession.generateReply(interaction.user.displayName, message);
+    
+    // create new sudoku embed
+    const reply = await sudokuSession.generateReply(message);
+
     await interaction.editReply(reply);
 
   }

@@ -7,7 +7,7 @@ class SudokuDatabaseHandler {
   userId: string
   constructor (userId: string) {
     this.userId = userId;
-    if (this.isNewUser()) this.createNewSudokuUser();
+    this.createNewSudokuUser();
   }
 
   // check if sudoku user document exists for user
@@ -17,8 +17,9 @@ class SudokuDatabaseHandler {
 
   // add new sudoku user document in database
   private createNewSudokuUser = async (): Promise<void> => {
+    if (!(await this.isNewUser())) return;
     const userPrefs = new Preferences({
-      theme: 'default'
+      theme: 'dark'
     });
 
     await new SudokuUsers({
@@ -30,8 +31,13 @@ class SudokuDatabaseHandler {
     }).save().catch(console.error);
   }
 
+  getTheme = async (): Promise<string> => {
+    const sudokuUserData = await SudokuUsers.findOne({discordUserId: this.userId});
+    return sudokuUserData.preferences.theme;
+  }
+
   changeTheme = async (theme: string): Promise<void> => {
-    await SudokuUsers.updateOne({discordUserId: this.userId}, {$set: {theme: theme}});
+    await SudokuUsers.updateOne({discordUserId: this.userId}, {$set: {preferences: {theme: theme}}});
   }
 }
 

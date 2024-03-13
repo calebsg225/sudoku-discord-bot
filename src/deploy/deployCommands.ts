@@ -2,16 +2,22 @@
 
 import { REST, RESTPostAPIApplicationGuildCommandsJSONBody, Routes } from "discord.js";
 import chalk from "chalk";
-import { BotToken, ClientId, DevGuildIds } from "../../config.json";
-import commands, { excludeCommands } from "../commands/commands";
+import { BotToken, ClientId, DevGuildId } from "../../config.json";
+import { globalCommands, devCommands } from "../commands/commands";
 
 export default (global: boolean) => {
-  const commandData: RESTPostAPIApplicationGuildCommandsJSONBody[] = [];
+  const globalCommandsData: RESTPostAPIApplicationGuildCommandsJSONBody[] = [];
+  const devCommandsData: RESTPostAPIApplicationGuildCommandsJSONBody[] = [];
 
   // load commands to deploy
-  commands.forEach((v, k) => {
-    if (global && excludeCommands.has(v)) return;
-    commandData.push(v.data.toJSON());
+  globalCommands.forEach((v, k) => {
+    console.log(chalk.cyan(`Loading the \`${k}\` global command...`))
+    globalCommandsData.push(v.data.toJSON());
+  });
+  
+  devCommands.forEach((v, k) => {
+    console.log(chalk.cyan(`Loading the \`${k}\` dev command...`))
+    globalCommandsData.push(v.data.toJSON());  
   });
 
   const rest = new REST().setToken(BotToken);
@@ -19,22 +25,24 @@ export default (global: boolean) => {
   (async () => {
     // attempts to deploy loaded commands to discord
     try {
-      console.log(chalk.gray(`[Deployment Status] Deploying ${commandData.length} of ${commands.size} commands...`));
+      console.log(chalk.gray(`[Deployment Status] Deploying commands...`));
       if (global) {
         await rest.put(
           Routes.applicationCommands(ClientId),
-          { body: commandData }
+            { body: globalCommandsData }
         );
       }
       else {
-        for (const guildId of DevGuildIds) {
-          await rest.put(
-              Routes.applicationGuildCommands(ClientId, guildId),
-            { body: commandData }
-          );
-        }
+        await rest.put(
+          Routes.applicationCommands(ClientId),
+          { body: [] }
+        )
+        await rest.put(
+          Routes.applicationGuildCommands(ClientId, DevGuildId),
+            { body: [...devCommandsData, ...globalCommandsData] }
+        );
       }
-      console.log(chalk.white(`[Deployment Status] Deployed. ${commandData.length} of ${commands.size} commands.`));
+      console.log(chalk.white(`[Deployment Status] Deployed commands.`));
     } catch (error) {
       console.error(chalk.red(error));
     }

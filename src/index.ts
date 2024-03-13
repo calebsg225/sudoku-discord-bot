@@ -5,7 +5,7 @@ import { BotToken, DatabaseAddress } from "../config.json";
 import listeners from "./listeners/listeners";
 
 import mongoose from "mongoose";
-import commands from "./commands/commands";
+import { globalCommands } from "./commands/commands";
 const { connect, connection } = mongoose;
 
 console.log(chalk.yellow(`Bot is starting...`));
@@ -17,7 +17,7 @@ const {DefaultWebSocketManagerOptions} = require(`@discordjs/ws`);
 DefaultWebSocketManagerOptions.identifyProperties.browser = "Discord Android";
 
 // mount commands to client
-client.commands = commands;
+client.commands = globalCommands;
 
 // command cooldowns
 client.cooldowns = new Collection;
