@@ -19,16 +19,25 @@ export const _new: SlashCommand = {
         .setRequired(true)
     ),
   execute: async (interaction) => {
-    // verify here
     const userId = interaction.user.id;
 
-    if (interaction.client.sudokuSessions.has(userId)) {
+    // verify that the user is in a session
+    if (!interaction.client.sudokuSessions.has(userId)) {
       return interaction.reply({
         content: `You are not in a sudoku session.\n Please use \`/sudoku\` to begin a session.`,
         ephemeral: true
       });
     }
     await interaction.deferReply();
-    
+    const message = await interaction.fetchReply();
+
+    // get user session data
+    const sudokuSession = interaction.client.sudokuSessions.get(userId);
+
+    sudokuSession.getRandomLine();
+    await sudokuSession.message.delete();
+    const reply = await sudokuSession.updateReply(interaction.user.displayName, message);
+    await interaction.editReply(reply);
+
   }
 }

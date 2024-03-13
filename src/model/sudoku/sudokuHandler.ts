@@ -2,7 +2,7 @@ import SudokuIamgeHandler from "./sudokuImageGeneration";
 import SudokuSolver from "./sudokuSolver";
 import SudokuDatabaseHandler from "./sudokuDatabase";
 
-import { Message } from "discord.js";
+import { ChatInputCommandInteraction, Message } from "discord.js";
 
 import Canvas from "@napi-rs/canvas";
 import fs from "node:fs";
@@ -26,7 +26,7 @@ class SudokuHandler {
     pencilMarkings: string
   }
 
-  constructor(difficulty: string, userId: string) {
+  constructor(difficulty: string, userId: string, message: Message) {
     this.imageHandler = new SudokuIamgeHandler; // class to handle sudoku image
     this.solver = new SudokuSolver; // class to handle puzzle checking and solving
     this.database = new SudokuDatabaseHandler(userId);
@@ -38,7 +38,7 @@ class SudokuHandler {
       pencilMarkings: "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
     }
 
-    this.message;
+    this.message = message;
 
     this.board = this.imageHandler.createCanvasBase();
   }
@@ -64,7 +64,16 @@ class SudokuHandler {
 
   solveSudoku = () => {}
 
+  updateReply = (displayName: string, message: Message) => {
+    this.updateMessage(message);
+    return this.imageHandler.gernerateSudokuEmbed(displayName, this.puzzleData.difficulty);
+  }
+
   changeDifficulty = (difficulty: string) => {}
+
+  updateMessage = (message: Message) => {
+    this.message = message;
+  }
 
   changeTheme = (theme: string) => {
     this.database.changeTheme(theme);

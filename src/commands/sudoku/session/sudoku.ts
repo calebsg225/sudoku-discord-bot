@@ -29,9 +29,12 @@ export const sudoku: SlashCommand = {
       });
     }
 
+    await interaction.deferReply();
+    const message = await interaction.fetchReply();
+
     const difficulty = interaction.options.getString('difficulty', true);
 
-    const sudokuSession = new SudokuHandler(difficulty, userId);
+    const sudokuSession = new SudokuHandler(difficulty, userId, message);
 
   }
 }

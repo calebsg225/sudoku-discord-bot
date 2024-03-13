@@ -1,5 +1,6 @@
 import Canvas from "@napi-rs/canvas";
 import sudokuThemes from "../../data/sudokuThemes.json";
+import { AttachmentBuilder, ChatInputCommandInteraction, EmbedBuilder } from "discord.js";
 
 class SudokuIamgeHandler {
   font: string;
@@ -21,6 +22,19 @@ class SudokuIamgeHandler {
   }
 
   populateCanvas = () => {}
+
+  gernerateSudokuEmbed = async (displayName: string, difficulty: string) => {
+    const attachment = new AttachmentBuilder(await this.board.encode("png"), { name: "sudoku.png" });
+    const sudokuEmbed = new EmbedBuilder()
+      .setTitle(`@${displayName}'s Sudoku, Difficulty: \`${difficulty}\``)
+      .setImage('attachment://sudoku.png')
+      .setColor('DarkButNotBlack');
+    const reply = {
+      embeds: [sudokuEmbed],
+      files: [attachment]
+    }
+    return reply;
+  }
 
   changeTheme = (theme: string) => {
     this.theme = theme;
