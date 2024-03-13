@@ -1,11 +1,8 @@
 import SudokuIamgeHandler from "./sudokuImageGeneration";
 import SudokuSolver from "./sudokuSolver";
 import SudokuDatabaseHandler from "./sudokuDatabase";
-
 import { PuzzleData } from "./types/sudokuTypes";
-
 import { AttachmentBuilder, EmbedBuilder, InteractionReplyOptions, Message, User } from "discord.js";
-
 import Canvas from "@napi-rs/canvas";
 import fs from "node:fs";
 
@@ -38,11 +35,15 @@ class SudokuHandler {
     return await this.generateSudokuEmbed(true);
   }
 
-  // sets new sudoku puzzle
-  generateNewPuzzle = (difficulty: string) => {
+  private getNewLine = (difficulty: string) => {
     const lines = fs.readFileSync(`${sudokuPuzzlePath}${difficulty.toLowerCase()}.txt`).toString().split(`\n`);
     const randomLine = lines[Math.floor(Math.random() * lines.length)];
-    const puzzle = randomLine.substring(13, 94);
+    return randomLine.substring(13, 94);
+  }
+
+  // sets new sudoku puzzle
+  generateNewPuzzle = (difficulty: string) => {
+    const puzzle = this.getNewLine(difficulty);
     this.puzzleData = {
       difficulty: difficulty,
       defaultPuzzle: puzzle,
@@ -51,9 +52,12 @@ class SudokuHandler {
     }
   }
 
-  private generateSudokuEmbed = async (first: boolean = false): Promise<InteractionReplyOptions> => {
+  private generateSudokuEmbed = async (newSudoku: boolean = false): Promise<InteractionReplyOptions> => {
     const theme = await this.database.getTheme();
-    if (first) {this.imageHandler.createBase(theme)}
+    if (newSudoku) {
+      this.imageHandler.createBase(theme);
+      this.imageHandler.populateBoard(theme, this.puzzleData.currentPuzzle, this.puzzleData.pencilMarkings);
+    }
     const board = this.imageHandler.createBoard(theme);
     const attachment = new AttachmentBuilder(await board.encode('png'), { name: "sudoku.png" });
     const sudokuEmbed = new EmbedBuilder()
@@ -66,6 +70,8 @@ class SudokuHandler {
     }
     return reply;
   }
+
+  private populateSudoku = async () => {}
 
   placeDigit = (row: number, column: number, digit: number) => {}
 
@@ -81,9 +87,9 @@ class SudokuHandler {
 
   solveSudoku = () => {}
 
-  generateReply = async (message: Message) => {
+  generateReply = async (message: Message, newSudoku: boolean = false) => {
     this.message = message;
-    return await this.generateSudokuEmbed();
+    return await this.generateSudokuEmbed(newSudoku);
   }
 
   changeDifficulty = (difficulty: string) => {}
@@ -92,7 +98,7 @@ class SudokuHandler {
   changeTheme = async (theme: string): Promise<InteractionReplyOptions> => {
     this.imageHandler.changeTheme(theme);
     await this.database.changeTheme(theme);
-    return await this.generateSudokuEmbed();
+    return await this.generateSudokuEmbed(true);
   }
   
 }

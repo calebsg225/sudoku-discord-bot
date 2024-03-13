@@ -2,7 +2,6 @@
 
 import SlashCommand from "../../_interface/SlashCommand";
 import { SlashCommandBuilder } from "discord.js";
-
 import { difficultyChoices } from "../../../model/sudoku/choices";
 
 export const _new: SlashCommand = {
@@ -27,6 +26,7 @@ export const _new: SlashCommand = {
         ephemeral: true
       });
     }
+
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
@@ -41,7 +41,7 @@ export const _new: SlashCommand = {
     await sudokuSession.message.delete();
 
     // create new sudoku embed
-    const reply = await sudokuSession.generateReply(message);
+    const reply = await sudokuSession.generateReply(message, true);
 
     await interaction.editReply(reply);
 

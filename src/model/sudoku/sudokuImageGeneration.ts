@@ -1,30 +1,36 @@
 import Canvas from "@napi-rs/canvas";
-import sudokuThemes from "../../data/sudokuThemes.json";
-import { AttachmentBuilder, EmbedBuilder, InteractionReplyOptions } from "discord.js";
+import { Theme } from "./types/sudokuTypes";
+import sudokuThemesImport from "../../data/sudokuThemes.json";
+import { resourceLimits } from "worker_threads";
 
-import { Theme, PuzzleData } from "./types/sudokuTypes";
+// is there a better way to do this??
+const sudokuThemes: {[theme: string]: Theme} = sudokuThemesImport;
 
 class SudokuIamgeHandler {
   font: string;
-
   width: number;
   borderThickness: number;
+  widthWithBorder: number;
   lineThickness: number;
-
+  context: "2d";
   base: Canvas.Canvas;
+  border: Canvas.Canvas;
   board: Canvas.Canvas;
 
   constructor() {
     this.font = 'Roboto Mono';
-
     this.width = 600;
     this.borderThickness = 12;
+    this.widthWithBorder = this.width + this.borderThickness*2;
     this.lineThickness = 6;
+    this.context = "2d";
+    
   }
 
+  // create empty sudoku board
   createBase = (theme: string) => {
     this.base = Canvas.createCanvas(this.width, this.width);
-    const ctx = this.base.getContext('2d');
+    const ctx = this.base.getContext(this.context);
 
     // fill in background
     ctx.fillStyle = sudokuThemes[theme].background;
@@ -60,16 +66,32 @@ class SudokuIamgeHandler {
       ctx.closePath();
       ctx.stroke();
     }
+
+    this.createBorder(theme);
+  }
+
+  // border for sudoku base
+  private createBorder = (theme: string) => {
+    this.border = Canvas.createCanvas(this.widthWithBorder, this.widthWithBorder);
+    const ctx = this.border.getContext(this.context);
+
+    ctx.fillStyle = sudokuThemes[theme].base;
+    ctx.fillRect(0, 0, this.widthWithBorder, this.widthWithBorder);
   }
 
   createBoard = (theme: string): Canvas.Canvas => {
-    return this.base;
+    const result = Canvas.createCanvas(this.widthWithBorder, this.widthWithBorder);
+    const ctx = result.getContext(this.context);
+
+    ctx.drawImage(this.border, 0, 0);
+    ctx.drawImage(this.board, this.borderThickness, this.borderThickness);
+
+    return result;
   }
 
   // fill empty board with new puzzle data
-  populateCanvas = (puzzle: string, pencilMarkings: string): Canvas.Canvas => {
+  populateBoard = (theme: string, puzzle: string, pencilMarkings: string): void => {
     this.board = this.base;
-    return 
   }
 
   updateCanvas = () => {}

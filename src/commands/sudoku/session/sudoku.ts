@@ -2,9 +2,7 @@
 
 import { SlashCommandBuilder, AttachmentBuilder } from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
-
 import SudokuHandler from "../../../model/sudoku/sudokuHandler";
-
 import { difficultyChoices } from "../../../model/sudoku/choices";
 
 export const sudoku: SlashCommand = {
@@ -23,6 +21,7 @@ export const sudoku: SlashCommand = {
   execute: async (interaction) => {
     const user = interaction.user;
 
+    // verify that the user is not in a session
     if (interaction.client.sudokuSessions.has(user.id)) {
       return interaction.reply({
         content: `You have already begun a sudoku session!`,
@@ -37,8 +36,11 @@ export const sudoku: SlashCommand = {
 
     // create new sudoku session
     const sudokuSession = new SudokuHandler(user, difficulty, message);
+
+    // initialize sudoku game and return the embed
     const reply = await sudokuSession.init();
 
+    // add session to sessions collection
     interaction.client.sudokuSessions.set(user.id, sudokuSession);
 
     await interaction.editReply(reply);

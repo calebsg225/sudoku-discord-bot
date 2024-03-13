@@ -2,7 +2,6 @@
 
 import { SlashCommandBuilder } from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
-
 import { themeChoices } from "../../../model/sudoku/choices";
 
 export const theme: SlashCommand = {
@@ -22,6 +21,7 @@ export const theme: SlashCommand = {
 
     const userId = interaction.user.id;
 
+    // verify that the user is in a session
     if (!interaction.client.sudokuSessions.has(userId)) {
       return interaction.reply({
         content: `You are not in a sudoku session.\n Please use \`/sudoku\` to begin a session.`,
@@ -34,13 +34,16 @@ export const theme: SlashCommand = {
 
     const theme = interaction.options.getString('name', true);
 
+    // get user session data
     const sudokuSession = interaction.client.sudokuSessions.get(userId);
 
     // updates database and session with new theme
     await sudokuSession.changeTheme(theme);
 
     await sudokuSession.message.delete();
+    
     const reply = await sudokuSession.generateReply(message);
+
     await interaction.editReply(reply);
   }
 }
