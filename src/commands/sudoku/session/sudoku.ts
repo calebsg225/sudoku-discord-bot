@@ -35,6 +35,10 @@ export const sudoku: SlashCommand = {
     const difficulty = interaction.options.getString('difficulty', true);
 
     const sudokuSession = new SudokuHandler(difficulty, userId, message);
+    const reply = await sudokuSession.generateReply(interaction.user.displayName, message);
 
+    interaction.client.sudokuSessions.set(userId, sudokuSession);
+
+    await interaction.editReply(reply);
   }
 }

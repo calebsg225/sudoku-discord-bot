@@ -39,8 +39,6 @@ class SudokuHandler {
     }
 
     this.message = message;
-
-    this.board = this.imageHandler.createCanvasBase();
   }
 
   // sets new sudoku puzzle
@@ -64,7 +62,7 @@ class SudokuHandler {
 
   solveSudoku = () => {}
 
-  updateReply = (displayName: string, message: Message) => {
+  generateReply = (displayName: string, message: Message) => {
     this.updateMessage(message);
     return this.imageHandler.gernerateSudokuEmbed(displayName, this.puzzleData.difficulty);
   }

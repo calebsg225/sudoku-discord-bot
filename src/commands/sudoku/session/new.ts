@@ -35,8 +35,9 @@ export const _new: SlashCommand = {
     const sudokuSession = interaction.client.sudokuSessions.get(userId);
 
     sudokuSession.getRandomLine();
+    // create new sudoku image here
     await sudokuSession.message.delete();
-    const reply = await sudokuSession.updateReply(interaction.user.displayName, message);
+    const reply = await sudokuSession.generateReply(interaction.user.displayName, message);
     await interaction.editReply(reply);
 
   }

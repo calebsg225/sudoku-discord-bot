@@ -1,9 +1,9 @@
 {
   "default": {
-    "backgroundColor": "#000000",
-    "baseColor":"#414141",
-    "inputDigitColor": "#4e2e2e",
-    "highlightDigitColor": "b5b5b5",
-    "solvedDigitColor": "#376839"
+    "background": "#000000",
+    "base": "#414141",
+    "inputDigit": "#4e2e2e",
+    "highlightDigit": "b5b5b5",
+    "solvedDigit": "#376839"
   }
 }
