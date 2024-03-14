@@ -102,8 +102,6 @@ class SudokuIamgeHandler {
     const digitPadding = interval/6;
     const pixelWidth = this.width/9 - digitPadding*2;
 
-    // set font
-    ctx.font = `${pixelWidth}px ${this.font}`;
     // center digit in each square
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -113,12 +111,13 @@ class SudokuIamgeHandler {
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
         if (+curPuz[digitPointer]) {
+          ctx.font = `${pixelWidth}px ${this.font}`;
           // set digit color differently for default digits and user inputed digits
           ctx.fillStyle = +defPuz[digitPointer] ? sudokuThemes[theme].base : sudokuThemes[theme].inputedDigit;
           ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval );
         } else {
           // fill in pencil markings if any
-          this.populatePencilMarkingsInSquare(i*interval*2, j*interval*2, marks.substring(digitPointer*9, digitPointer*9+9), ctx);
+          this.populatePencilMarkingsInSquare(theme, i, j, marks.substring(digitPointer*9, digitPointer*9+9), ctx);
         }
         digitPointer++;
       }
@@ -127,12 +126,17 @@ class SudokuIamgeHandler {
 
   // generate all pencil markings for one square
   private populatePencilMarkingsInSquare = (
+    theme: string,
     row: number,
-    column: number,
+    col: number,
     pencilMarkings: string,
     ctx: Canvas.SKRSContext2D
   ) => {
-
+    pencilMarkings.split('').forEach((digit) => {
+      if (+digit) {
+        this.addPencilMarking(theme, +digit-1, row, col, ctx);
+      }
+    });
   }
 
   private calculatePencilMarkLocation = (digit: number, row: number, col: number) => {
@@ -146,7 +150,7 @@ class SudokuIamgeHandler {
     const xInterval = (interval * col) + ((pencilCol * pencilInterval * 2) + pencilInterval);
     const yInterval = (interval * row) + ((pencilRow * pencilInterval * 2) + pencilInterval);
     
-    const pixelWidth = pencilInterval*2; // change pencil mark font size here
+    const pixelWidth = pencilInterval*2.2; // change pencil mark font size here
 
     return { xInterval, yInterval, pixelWidth, pencilInterval };
   }
@@ -155,25 +159,27 @@ class SudokuIamgeHandler {
     theme: string,
     digit: number,
     row: number,
-    col: number
+    col: number,
+    ctx: Canvas.SKRSContext2D = this.board.getContext(this.context)
   ): void => {
     const { xInterval, yInterval, pixelWidth } = this.calculatePencilMarkLocation(digit, row, col);
+
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
     
-    const ctx = this.board.getContext(this.context);
     ctx.fillStyle = sudokuThemes[theme].inputedDigit;
     ctx.font = `${pixelWidth}px ${this.font}`;
     ctx.fillText(`${digit+1}`, xInterval, yInterval);
   }
-
+  
   removePencilMarking = (
-    theme: string,
     digit: number,
     row: number,
-    col: number
+    col: number,
+    ctx: Canvas.SKRSContext2D = this.board.getContext(this.context)
   ): void => {
-    const { xInterval, yInterval, pixelWidth, pencilInterval } = this.calculatePencilMarkLocation(digit, row, col);
+    const { xInterval, yInterval, pencilInterval } = this.calculatePencilMarkLocation(digit, row, col);
 
-    const ctx = this.board.getContext(this.context);
     ctx.clearRect(
       xInterval - pencilInterval,
       yInterval - pencilInterval,

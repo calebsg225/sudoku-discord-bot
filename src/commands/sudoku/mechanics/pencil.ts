@@ -20,7 +20,7 @@ export const pencil: SlashCommand = {
             .setRequired(true)
         )
     ).addSubcommand(subCommand =>
-      subCommand.setName('place')
+      subCommand.setName('set')
         .setDescription('add or remove a pencil marking in a specefied square')
         .addNumberOption(option =>
           option.setName('position')
@@ -60,7 +60,7 @@ export const pencil: SlashCommand = {
 
     const subCommand = interaction.options.getSubcommand();
 
-    if (subCommand === 'place') {
+    if (subCommand === 'set') {
       // 'place' sub command
       const [ digit, row, column ] = output;
       await sudokuSession.pencilPlace(digit, row, column);

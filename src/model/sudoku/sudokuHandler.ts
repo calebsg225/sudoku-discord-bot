@@ -122,7 +122,7 @@ class SudokuHandler {
     
     // toggle pencil marking in puzzle data and on board
     if (+marks[pencilGroupIndex]) {
-      this.imageHandler.removePencilMarking(theme, digit, row, col);
+      this.imageHandler.removePencilMarking(digit, row, col);
       this.updatePuzzleData('pencilMarkings', `0`, pencilGroupIndex);
     } else {
       this.imageHandler.addPencilMarking(theme, digit, row, col);
