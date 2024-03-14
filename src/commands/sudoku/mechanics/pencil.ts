@@ -63,11 +63,11 @@ export const pencil: SlashCommand = {
     if (subCommand === 'place') {
       // 'place' sub command
       const [ digit, row, column ] = output;
-      sudokuSession.pencilPlace(digit, row, column);
+      await sudokuSession.pencilPlace(digit, row, column);
     } else {
       // 'clear' sub command
       const [ row, column ] = output;
-      sudokuSession.pencilClear(row, column);
+      await sudokuSession.pencilClear(row, column);
     }
 
     await sudokuSession.message.delete();

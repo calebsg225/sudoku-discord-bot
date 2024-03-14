@@ -100,10 +100,10 @@ class SudokuIamgeHandler {
 
     const interval = this.width/18;
     const digitPadding = interval/6;
-    const pixalWidth = this.width/9 - digitPadding*2;
+    const pixelWidth = this.width/9 - digitPadding*2;
 
     // set font
-    ctx.font = `${pixalWidth}px ${this.font}`;
+    ctx.font = `${pixelWidth}px ${this.font}`;
     // center digit in each square
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
@@ -134,8 +134,32 @@ class SudokuIamgeHandler {
   ) => {
 
   }
+  
+  addPencilMarking = (
+    theme: string,
+    digit: number,
+    row: number,
+    col: number
+  ): void => {
+    const ctx = this.board.getContext(this.context);
+    const interval = this.width/9
+    
+    const pencilCol = digit%3;
+    const pencilRow = (digit - pencilCol)/3;
+    
+    const pencilInterval = interval/6;
+    // _Intervel = (_interval) + (_pencilInterval)
+    const xInterval = (interval * col) + ((pencilCol * pencilInterval * 2) + pencilInterval);
+    const yInterval = (interval * row) + ((pencilRow * pencilInterval * 2) + pencilInterval);
 
-  togglePencilMarking = () => {}
+    const pixelWidth = pencilInterval*2; // change pencil mark font size here
+
+    ctx.fillStyle = sudokuThemes[theme].inputedDigit;
+    ctx.font = `${pixelWidth}px ${this.font}`;
+    ctx.fillText(`${digit+1}`, xInterval, yInterval);
+  }
+
+  removePencilMarking = (theme: string, digit: number, row: number, col: number): void => {}
 
   // remove digit or pencil markings from a square on the sudoku board
   clearSquare = (row: number, col: number): void => {
@@ -159,10 +183,9 @@ class SudokuIamgeHandler {
 
   // regenerate new base, border, and board canvases
   // used on session initialization and theme change
-  regenerateAll = (theme: string, puzzleData: PuzzleData): Canvas.Canvas => {
+  regenerateAll = (theme: string, puzzleData: PuzzleData): void => {
     this.createBase(theme);
     this.populateBoard(theme, puzzleData);
-    return this.createBoard(theme);
   }
 }
 

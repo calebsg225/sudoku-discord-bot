@@ -10,7 +10,7 @@
   "light": {
     "id": "1",
     "background": "#FFFFFF",
-    "base": "#222222",
+    "base": "#111111",
     "inputedDigit": "#3a4bcb",
     "highlightDigit": "828282",
     "solvedDigit": "376839"

@@ -34,7 +34,8 @@ class SudokuHandler {
     this.message = message;
     this.setNewPuzzleData(difficulty);
 
-    const board = this.imageHandler.regenerateAll(theme, this.puzzleData);
+    this.imageHandler.regenerateAll(theme, this.puzzleData);
+    const board = this.imageHandler.createBoard(theme);
     return await this.generateEmbed(board);
   }
 
@@ -58,6 +59,14 @@ class SudokuHandler {
   }
   
   private updatePuzzleData = (valueToUpdate: string, newValue: string, index: number = -1) => {
+    if (index < 0) {
+      this.puzzleData.difficulty = newValue;
+    } else {
+      this.puzzleData[valueToUpdate] =
+        this.puzzleData[valueToUpdate].substring(0, index)
+        + newValue
+        + this.puzzleData[valueToUpdate].substring(index+1);
+    }
   }
   
   // gets a new puzzle from txt file containing puzzles of specified difficulty
@@ -98,23 +107,34 @@ class SudokuHandler {
   // first half of [pencil] [place] discord command
   // second half is this.generateReply()
   // add or remove pencil marking with specified digit at specified row and column
-  pencilPlace = (digit: number, row: number, col: number) => {
-    [ row, col ] = this.zeroIndex([row, col]);
+  pencilPlace = async (digit: number, row: number, col: number): Promise<void> => {
+    const theme = await this.database.getTheme();
+    [ digit, row, col ] = this.zeroIndex([digit, row, col]);
     const digitIndex = row*9 + col;
-    const pencilGroupIndex = digitIndex*9;
-    const { currentPuzzle: curPuz } = this.puzzleData;
-    
-    if (+curPuz[digitIndex]) {
+    const pencilGroupIndex = digitIndex*9 + digit;
+    const { defaultPuzzle: defPuz, currentPuzzle: curPuz, pencilMarkings: marks } = this.puzzleData;
+
+    // if there is a digit placed here, remove it.
+    if (+curPuz[digitIndex] && !+defPuz[digitIndex]) {
       this.imageHandler.clearSquare(row, col);
-      this.updatePuzzleData('currentPuzzle', '0', digitIndex);
-      this.puzzleData.currentPuzzle = curPuz.substring(0, digitIndex) + 0 + curPuz.substring(digitIndex+1);
+      this.updatePuzzleData('currentPuzzle', `${digit+1}`, digitIndex);
     }
+    
+    // toggle pencil marking in puzzle data and on board
+    if (+marks[pencilGroupIndex]) {
+      this.imageHandler.removePencilMarking(theme, digit, row, col);
+      this.updatePuzzleData('pencilMarkings', `0`, pencilGroupIndex);
+    } else {
+      this.imageHandler.addPencilMarking(theme, digit, row, col);
+      this.updatePuzzleData('pencilMarkings', `${digit+1}`, pencilGroupIndex);
+    }
+
   }
   
   // first half of [pencil] [clear] discord command
   // second half is this.generateReply()
   // clear all pencil markings at specified row and column
-  pencilClear = (row: number, col: number) => {}
+  pencilClear = async (row: number, col: number): Promise<void> => {}
 
   resetPuzzle = () => {}
 
@@ -143,12 +163,11 @@ class SudokuHandler {
     return { verified: verified, output: [...output] }
   }
 
-  // [theme] command
+  // first half of [theme] discord command
   // updates database and session with new theme
-  changeTheme = async (theme: string): Promise<InteractionReplyOptions> => {
+  changeTheme = async (theme: string) => {
     const newTheme = await this.database.changeTheme(theme);
-    const board = this.imageHandler.regenerateAll(newTheme, this.puzzleData);
-    return await this.generateEmbed(board);
+    this.imageHandler.regenerateAll(newTheme, this.puzzleData);
   }
   
 }
