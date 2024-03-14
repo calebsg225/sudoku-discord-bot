@@ -134,14 +134,8 @@ class SudokuIamgeHandler {
   ) => {
 
   }
-  
-  addPencilMarking = (
-    theme: string,
-    digit: number,
-    row: number,
-    col: number
-  ): void => {
-    const ctx = this.board.getContext(this.context);
+
+  private calculatePencilMarkLocation = (digit: number, row: number, col: number) => {
     const interval = this.width/9
     
     const pencilCol = digit%3;
@@ -151,15 +145,43 @@ class SudokuIamgeHandler {
     // _Intervel = (_interval) + (_pencilInterval)
     const xInterval = (interval * col) + ((pencilCol * pencilInterval * 2) + pencilInterval);
     const yInterval = (interval * row) + ((pencilRow * pencilInterval * 2) + pencilInterval);
-
+    
     const pixelWidth = pencilInterval*2; // change pencil mark font size here
 
+    return { xInterval, yInterval, pixelWidth, pencilInterval };
+  }
+  
+  addPencilMarking = (
+    theme: string,
+    digit: number,
+    row: number,
+    col: number
+  ): void => {
+    const { xInterval, yInterval, pixelWidth } = this.calculatePencilMarkLocation(digit, row, col);
+    
+    const ctx = this.board.getContext(this.context);
     ctx.fillStyle = sudokuThemes[theme].inputedDigit;
     ctx.font = `${pixelWidth}px ${this.font}`;
     ctx.fillText(`${digit+1}`, xInterval, yInterval);
   }
 
-  removePencilMarking = (theme: string, digit: number, row: number, col: number): void => {}
+  removePencilMarking = (
+    theme: string,
+    digit: number,
+    row: number,
+    col: number
+  ): void => {
+    const { xInterval, yInterval, pixelWidth, pencilInterval } = this.calculatePencilMarkLocation(digit, row, col);
+
+    const ctx = this.board.getContext(this.context);
+    ctx.clearRect(
+      xInterval - pencilInterval,
+      yInterval - pencilInterval,
+      pencilInterval*2,
+      pencilInterval*2
+    );
+
+  }
 
   // remove digit or pencil markings from a square on the sudoku board
   clearSquare = (row: number, col: number): void => {
