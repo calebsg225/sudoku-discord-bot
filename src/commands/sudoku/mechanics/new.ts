@@ -36,7 +36,7 @@ export const _new: SlashCommand = {
     const sudokuSession = interaction.client.sudokuSessions.get(userId);
 
     // generate a new puzzle
-    await sudokuSession.generateNewPuzzle(difficulty);
+    await sudokuSession.createNewPuzzle(difficulty);
 
     await sudokuSession.message.delete();
 

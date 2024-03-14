@@ -35,10 +35,10 @@ export const sudoku: SlashCommand = {
     const difficulty = interaction.options.getString('difficulty', true);
 
     // create new sudoku session
-    const sudokuSession = new SudokuHandler(user, difficulty, message);
+    const sudokuSession = new SudokuHandler(user);
 
     // initialize sudoku game and return the embed
-    const reply = await sudokuSession.init();
+    const reply = await sudokuSession.init(difficulty, message);
 
     // add session to sessions collection
     interaction.client.sudokuSessions.set(user.id, sudokuSession);

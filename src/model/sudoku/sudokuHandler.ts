@@ -19,30 +19,35 @@ class SudokuHandler {
 
   private puzzleData: PuzzleData;
 
-  constructor(user: User , difficulty: string, message: Message) {
-    this.solver = new SudokuSolver; // class to handle puzzle checking and solving
-    this.database = new SudokuDatabaseHandler(user.id);
-    this.imageHandler = new SudokuIamgeHandler(); // class to handle sudoku image
-    
-    this.generateNewPuzzle(difficulty);
-    
-    this.message = message;
+  constructor(user: User) {
     this.user = user;
+    this.solver = new SudokuSolver; // class to handle puzzle checking and solving
+    this.database = new SudokuDatabaseHandler(this.user.id);
+    this.imageHandler = new SudokuIamgeHandler(); // class to handle sudoku image
   }
 
   // [sudoku] discord command
-  // gets theme from database, returns properly themed embed for user
-  init = async (): Promise<InteractionReplyOptions> => {
+  // handles initial puzzle creation and embed generation
+  init = async (difficulty: string, message: Message): Promise<InteractionReplyOptions> => {
     const theme = await this.database.getTheme();
+
+    this.message = message;
+    this.setNewPuzzleData(difficulty);
+
     const board = this.imageHandler.regenerateAll(theme, this.puzzleData);
     return await this.generateEmbed(board);
   }
-  
+
   // first half of [new] discord command
   // second half is this.generateReply()
   // sets new sudoku puzzle
-  generateNewPuzzle = async (difficulty: string) => {
+  createNewPuzzle = async (difficulty: string) => {
     const theme = await this.database.getTheme();
+    this.setNewPuzzleData(difficulty);
+    this.imageHandler.regenerateData(theme, this.puzzleData);
+  }
+
+  private setNewPuzzleData = (difficulty: string) => {
     const puzzle = this.getNewLine(difficulty);
     this.puzzleData = {
       difficulty: difficulty,
@@ -50,7 +55,6 @@ class SudokuHandler {
       currentPuzzle: puzzle,
       pencilMarkings: "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
     }
-    this.imageHandler.regenerateData(theme, this.puzzleData);
   }
   
   private getNewLine = (difficulty: string) => {
