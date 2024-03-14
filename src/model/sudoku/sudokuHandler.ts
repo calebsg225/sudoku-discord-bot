@@ -111,6 +111,19 @@ class SudokuHandler {
 
   changeDifficulty = (difficulty: string) => {}
 
+  verifyInput = (input: string[]): { verified: boolean, output: number[] } => {
+    const output = [];
+    let verified = true;
+    for (const value of input) {
+      if (!+value) {
+        verified = false;
+        break;
+      };
+      output.push(+value);
+    }
+    return { verified: verified, output: [...output] }
+  }
+
   // updates database and session with new theme
   changeTheme = async (theme: string): Promise<InteractionReplyOptions> => {
     this.regenerateBase = true;
