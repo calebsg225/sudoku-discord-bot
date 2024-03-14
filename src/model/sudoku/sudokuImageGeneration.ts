@@ -2,6 +2,7 @@ import Canvas from "@napi-rs/canvas";
 import { PuzzleData, Theme } from "./types/sudokuTypes";
 import sudokuThemesImport from "../../data/sudokuThemes.json";
 
+// sets a type to imported json file
 // is there a better way to do this??
 const sudokuThemes: {[theme: string]: Theme} = sudokuThemesImport;
 
@@ -11,7 +12,7 @@ class SudokuIamgeHandler {
   borderThickness: number;
   widthWithBorder: number;
   lineThickness: number;
-  context: "2d";
+  context: any; // only setting to any to prevent duplicate values
   base: Canvas.Canvas;
   border: Canvas.Canvas;
   board: Canvas.Canvas;
@@ -23,7 +24,6 @@ class SudokuIamgeHandler {
     this.widthWithBorder = this.width + this.borderThickness*2;
     this.lineThickness = 6;
     this.context = "2d";
-    
   }
 
   // create empty sudoku board
@@ -78,6 +78,8 @@ class SudokuIamgeHandler {
     ctx.fillRect(0, 0, this.widthWithBorder, this.widthWithBorder);
   }
 
+  // combine all canvases into one
+  // returns complete sudoku board
   createBoard = (theme: string): Canvas.Canvas => {
     const result = Canvas.createCanvas(this.widthWithBorder, this.widthWithBorder);
     const ctx = result.getContext(this.context);
@@ -124,17 +126,40 @@ class SudokuIamgeHandler {
   }
 
   // generate all pencil markings for one square
-  private populatePencilMarkingsInSquare = (row: number, column: number, pencilMarkings: string, ctx: Canvas.SKRSContext2D) => {
+  private populatePencilMarkingsInSquare = (
+    row: number,
+    column: number,
+    pencilMarkings: string,
+    ctx: Canvas.SKRSContext2D
+  ) => {
 
   }
 
   togglePencilMarking = () => {}
 
-  regenerateData = (theme: string, puzzleData: PuzzleData) => {
+  // remove digit or pencil markings from a square on the sudoku board
+  clearSquare = (row: number, col: number): void => {
+    const ctx = this.board.getContext(this.context);
+    const interval = this.width/9;
+
+    ctx.clearRect(
+      (col * interval) + this.lineThickness,
+      (row * interval) + this.lineThickness,
+      interval - (this.lineThickness * 2),
+      interval - (this.lineThickness * 2)
+    );
+  }
+
+  // regenerates only the data of sudoku puzzle
+  // used when a new sudoku is created
+  // or when saved or completed games are loaded
+  regenerateData = (theme: string, puzzleData: PuzzleData): void => {
     this.populateBoard(theme, puzzleData);
   }
 
-  regenerateAll = (theme: string, puzzleData: PuzzleData) => {
+  // regenerate new base, border, and board canvases
+  // used on session initialization and theme change
+  regenerateAll = (theme: string, puzzleData: PuzzleData): Canvas.Canvas => {
     this.createBase(theme);
     this.populateBoard(theme, puzzleData);
     return this.createBoard(theme);

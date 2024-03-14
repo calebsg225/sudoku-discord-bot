@@ -57,6 +57,10 @@ class SudokuHandler {
     }
   }
   
+  private updatePuzzleData = (valueToUpdate: string, newValue: string, index: number = -1) => {
+  }
+  
+  // gets a new puzzle from txt file containing puzzles of specified difficulty
   private getNewLine = (difficulty: string) => {
     const lines = fs.readFileSync(`${sudokuPuzzlePath}${difficulty.toLowerCase()}.txt`).toString().split(`\n`);
     const randomLine = lines[Math.floor(Math.random() * lines.length)];
@@ -84,12 +88,27 @@ class SudokuHandler {
   highlightDigit = (digit: number) => {}
   
   private getDigitIndicies = (digit: number) => {}
+
+  // subtract 1 from inputed values
+  private zeroIndex = (nums: number[]): number[] => {
+    nums.forEach((num, i) => nums[i]--);
+    return nums;
+  }
   
   // first half of [pencil] [place] discord command
   // second half is this.generateReply()
   // add or remove pencil marking with specified digit at specified row and column
   pencilPlace = (digit: number, row: number, col: number) => {
-    const pencilGroupIndex = row*9 + col
+    [ row, col ] = this.zeroIndex([row, col]);
+    const digitIndex = row*9 + col;
+    const pencilGroupIndex = digitIndex*9;
+    const { currentPuzzle: curPuz } = this.puzzleData;
+    
+    if (+curPuz[digitIndex]) {
+      this.imageHandler.clearSquare(row, col);
+      this.updatePuzzleData('currentPuzzle', '0', digitIndex);
+      this.puzzleData.currentPuzzle = curPuz.substring(0, digitIndex) + 0 + curPuz.substring(digitIndex+1);
+    }
   }
   
   // first half of [pencil] [clear] discord command
