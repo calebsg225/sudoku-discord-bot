@@ -1,0 +1,7 @@
+{
+  "BotToken": "DISCORD_BOT_TOKEN",
+  "ClientId": "DISCORD_BOT_CLIENT_ID",
+  "DevGuildId": "ID_OF_DISCORD_GUILD_TO_DEVELOP_IN",
+  "DevUserId": "YOUR_USER_ID",
+  "DatabaseAddress": "URL_TO_YOUR_MONGO_DB"
+}
