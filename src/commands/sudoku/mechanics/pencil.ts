@@ -7,16 +7,28 @@ export const pencil: SlashCommand = {
   path: 'sudoku/mechanics',
   data: new SlashCommandBuilder()
     .setName('pencil')
-    .setDescription('add or remove a pencil marking in a specefied square')
+    .setDescription('place or clear pencil markings')
     .setDMPermission(false)
-    .addNumberOption(option =>
-      option.setName('position')
-        .setDescription('[digit, row, column], Ex. 763 would be digit 7, row 6, column 3')
-        // does not deal with zeros being entered
-        // further verification is required in execute funtion
-        .setMinValue(111)
-        .setMaxValue(999)
-        .setRequired(true)
+    .addSubcommand(subCommand =>
+      subCommand.setName('clear')
+        .setDescription('clear selected square of all pencil markings')
+        .addNumberOption(option =>
+          option.setName('position')
+            .setDescription('[row, column], Ex. 29 would be row 2, column 9')
+            .setMinValue(11)
+            .setMaxValue(99)
+            .setRequired(true)
+        )
+    ).addSubcommand(subCommand =>
+      subCommand.setName('place')
+        .setDescription('add or remove a pencil marking in a specefied square')
+        .addNumberOption(option =>
+          option.setName('position')
+            .setDescription('[digit, row, column], Ex. 763 would be digit 7, row 6, column 3')
+            .setMinValue(111)
+            .setMaxValue(999)
+            .setRequired(true)
+        )
     )
   ,
   execute: async (interaction) => {
@@ -46,11 +58,18 @@ export const pencil: SlashCommand = {
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
-    const [ digit, row, column ] = output;
+    const subCommand = interaction.options.getSubcommand();
+
+    if (subCommand === 'place') {
+      const [ digit, row, column ] = output;
+    } else {
+      const [ row, column ] = output;
+    }
+
 
     // pencil data here
 
-    await interaction.editReply(`${digit}|${row}|${column}`);
+    await interaction.editReply(`verified`);
 
 
   }
