@@ -132,8 +132,10 @@ class SudokuIamgeHandler {
 
   updateCanvas = () => {}
 
-  regenerate = (theme: string, puzzleData: PuzzleData) => {
+  regenerateBase = (theme: string) => {
     this.createBase(theme);
+  }
+  regenerateData = (theme: string, puzzleData: PuzzleData) => {
     this.populateBoard(theme, puzzleData);
   }
 }

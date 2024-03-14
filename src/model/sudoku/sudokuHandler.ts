@@ -17,7 +17,8 @@ class SudokuHandler {
   message: Message; // discord message of previous sudoku image
   user: User; // user the session belongs to
 
-  regenerate: boolean; // set to true if theme changes or a new game is created
+  regenerateBase: boolean; // set to true if session begins or theme changes
+  regenerateData: boolean; // set to true if session begins or theme changes or a new puzzle is generated
 
   private puzzleData: PuzzleData;
 
@@ -30,12 +31,12 @@ class SudokuHandler {
     
     this.message = message;
     this.user = user;
-
-    this.regenerate = true;
   }
 
   // run async functions when first creating a new session
   init = async (): Promise<InteractionReplyOptions> => {
+    this.regenerateBase = true;
+    this.regenerateData = true;
     return await this.generateSudokuEmbed();
   }
 
@@ -47,7 +48,7 @@ class SudokuHandler {
 
   // sets new sudoku puzzle
   generateNewPuzzle = (difficulty: string) => {
-    this.regenerate = true;
+    this.regenerateData = true;
     const puzzle = this.getNewLine(difficulty);
     this.puzzleData = {
       difficulty: difficulty,
@@ -61,11 +62,18 @@ class SudokuHandler {
   private generateSudokuEmbed = async (): Promise<InteractionReplyOptions> => {
     const theme = await this.database.getTheme();
 
-    // regenerate sudoku game if theme changes or a new game is made
-    if (this.regenerate) {
-      this.imageHandler.regenerate(theme, this.puzzleData);
-      this.regenerate = false;
+    // regenerate base if theme changes
+    if (this.regenerateBase) {
+      this.imageHandler.regenerateBase(theme);
+      this.regenerateBase = false;
     }
+
+    // regenerate data if new game is created
+    if (this.regenerateData) {
+      this.imageHandler.regenerateData(theme, this.puzzleData);
+      this.regenerateData = false;
+    }
+
     const board = this.imageHandler.createBoard(theme);
     const attachment = new AttachmentBuilder(await board.encode('png'), { name: "sudoku.png" });
     const sudokuEmbed = new EmbedBuilder()
@@ -105,7 +113,8 @@ class SudokuHandler {
 
   // updates database and session with new theme
   changeTheme = async (theme: string): Promise<InteractionReplyOptions> => {
-    this.regenerate = true;
+    this.regenerateBase = true;
+    this.regenerateData = true;
     await this.database.changeTheme(theme);
     return await this.generateSudokuEmbed();
   }
