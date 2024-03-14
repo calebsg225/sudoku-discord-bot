@@ -83,6 +83,7 @@ class SudokuIamgeHandler {
     const ctx = result.getContext(this.context);
 
     ctx.drawImage(this.border, 0, 0);
+    ctx.drawImage(this.base, this.borderThickness, this.borderThickness);
     ctx.drawImage(this.board, this.borderThickness, this.borderThickness);
 
     return result;
@@ -90,12 +91,43 @@ class SudokuIamgeHandler {
 
   // fill empty board with new puzzle data
   private populateBoard = (theme: string, puzzleData: PuzzleData): void => {
-    const { currentPuzzle: puzzle, pencilMarkings: marks } = puzzleData;
-    this.board = this.base;
+    const { currentPuzzle: curPuz, defaultPuzzle: defPuz, pencilMarkings: marks } = puzzleData;
 
+    this.board = Canvas.createCanvas(this.width, this.width);
+    const ctx = this.board.getContext(this.context);
+
+    const interval = this.width/18;
+    const digitPadding = interval/6;
+    const pixalWidth = this.width/9 - digitPadding*2;
+
+    // set font
+    ctx.font = `${pixalWidth}px ${this.font}`;
+    // center digit in each square
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    
     // fill in main digits
+    let digitPointer = 0;
+    for (let i = 0; i < 9; i++) {
+      for (let j = 0; j < 9; j++) {
+        if (+curPuz[digitPointer]) {
+          // set digit color differently for default digits and user inputed digits
+          ctx.fillStyle = +defPuz[digitPointer] ? sudokuThemes[theme].base : sudokuThemes[theme].inputedDigit;
+          ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval );
+        } else {
+          this.populatePencilMarkingsInSquare(i*interval*2, j*interval*2, marks.substring(digitPointer*9, digitPointer*9+9), ctx);
+        }
+        digitPointer++;
+      }
+    }
 
+    
     // fill in pencil markings
+  }
+
+  // generate all pencil markings for one square
+  private populatePencilMarkingsInSquare = (row: number, column: number, pencilMarkings: string, ctx: Canvas.SKRSContext2D) => {
+
   }
 
   updateCanvas = () => {}

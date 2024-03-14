@@ -2,7 +2,7 @@ type Theme = {
   id: string,
   background: string,
   base: string,
-  inputDigit: string,
+  inputedDigit: string,
   highlightDigit: string,
   solvedDigit: string
 }

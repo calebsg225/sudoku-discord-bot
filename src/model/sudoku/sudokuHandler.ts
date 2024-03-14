@@ -79,7 +79,8 @@ class SudokuHandler {
     return reply;
   }
 
-  private populateSudoku = async () => {}
+  private populateSudoku = async () => {
+  }
 
   placeDigit = (row: number, column: number, digit: number) => {}
 
