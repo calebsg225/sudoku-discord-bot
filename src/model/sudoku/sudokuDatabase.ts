@@ -37,9 +37,10 @@ class SudokuDatabaseHandler {
     return sudokuUserData.preferences.theme;
   }
 
-  // update user preferences with new theme
-  changeTheme = async (theme: string): Promise<void> => {
+  // update user preferences with new theme, then returns new theme from database
+  changeTheme = async (theme: string): Promise<string> => {
     await SudokuUsers.updateOne({discordUserId: this.userId}, {$set: {preferences: {theme: theme}}});
+    return await this.getTheme();
   }
 }
 

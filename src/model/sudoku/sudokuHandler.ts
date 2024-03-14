@@ -17,9 +17,6 @@ class SudokuHandler {
   message: Message; // discord message of previous sudoku image
   user: User; // user the session belongs to
 
-  regenerateBase: boolean; // set to true if session begins or theme changes
-  regenerateData: boolean; // set to true if session begins or theme changes or a new puzzle is generated
-
   private puzzleData: PuzzleData;
 
   constructor(user: User , difficulty: string, message: Message) {
@@ -33,22 +30,19 @@ class SudokuHandler {
     this.user = user;
   }
 
-  // run async functions when first creating a new session
+  // [sudoku] discord command
+  // gets theme from database, returns properly themed embed for user
   init = async (): Promise<InteractionReplyOptions> => {
-    this.regenerateBase = true;
-    this.regenerateData = true;
-    return await this.generateSudokuEmbed();
+    const theme = await this.database.getTheme();
+    const board = this.imageHandler.regenerateAll(theme, this.puzzleData);
+    return await this.generateEmbed(board);
   }
-
-  private getNewLine = (difficulty: string) => {
-    const lines = fs.readFileSync(`${sudokuPuzzlePath}${difficulty.toLowerCase()}.txt`).toString().split(`\n`);
-    const randomLine = lines[Math.floor(Math.random() * lines.length)];
-    return randomLine.substring(13, 94);
-  }
-
+  
+  // first half of [new] discord command
+  // second half is this.generateReply()
   // sets new sudoku puzzle
-  generateNewPuzzle = (difficulty: string) => {
-    this.regenerateData = true;
+  generateNewPuzzle = async (difficulty: string) => {
+    const theme = await this.database.getTheme();
     const puzzle = this.getNewLine(difficulty);
     this.puzzleData = {
       difficulty: difficulty,
@@ -56,61 +50,63 @@ class SudokuHandler {
       currentPuzzle: puzzle,
       pencilMarkings: "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
     }
+    this.imageHandler.regenerateData(theme, this.puzzleData);
   }
-
-  // creates updated embed containing the sudoku game
-  private generateSudokuEmbed = async (): Promise<InteractionReplyOptions> => {
-    const theme = await this.database.getTheme();
-
-    // regenerate base if theme changes
-    if (this.regenerateBase) {
-      this.imageHandler.regenerateBase(theme);
-      this.regenerateBase = false;
-    }
-
-    // regenerate data if new game is created
-    if (this.regenerateData) {
-      this.imageHandler.regenerateData(theme, this.puzzleData);
-      this.regenerateData = false;
-    }
-
-    const board = this.imageHandler.createBoard(theme);
+  
+  private getNewLine = (difficulty: string) => {
+    const lines = fs.readFileSync(`${sudokuPuzzlePath}${difficulty.toLowerCase()}.txt`).toString().split(`\n`);
+    const randomLine = lines[Math.floor(Math.random() * lines.length)];
+    return randomLine.substring(13, 94);
+  }
+  
+  // generates discord embed given a sudoku board canvas
+  private generateEmbed = async (board: Canvas.Canvas) => {
     const attachment = new AttachmentBuilder(await board.encode('png'), { name: "sudoku.png" });
     const sudokuEmbed = new EmbedBuilder()
-      .setTitle(`@${this.user.displayName}'s Sudoku, Difficulty: \`${this.puzzleData.difficulty}\``)
-      .setImage('attachment://sudoku.png')
-      .setColor('DarkButNotBlack');
+    .setTitle(`@${this.user.displayName}'s Sudoku, Difficulty: \`${this.puzzleData.difficulty}\``)
+    .setImage('attachment://sudoku.png')
+    .setColor('DarkButNotBlack');
     const reply = {
       embeds: [sudokuEmbed],
       files: [attachment]
     }
     return reply;
   }
-
-  private populateSudoku = async () => {
-  }
-
-  placeDigit = (row: number, column: number, digit: number) => {}
-
-  removeDigit = (row: number, column: number) => {}
-
+  
+  placeDigit = (row: number, col: number, digit: number) => {}
+  
+  removeDigit = (row: number, col: number) => {}
+  
   highlightDigit = (digit: number) => {}
-
+  
   private getDigitIndicies = (digit: number) => {}
-
-  pencil = (row: number, column: number, digit: number) => {}
+  
+  // first half of [pencil] [place] discord command
+  // second half is this.generateReply()
+  // add or remove pencil marking with specified digit at specified row and column
+  pencilPlace = (digit: number, row: number, col: number) => {
+    const pencilGroupIndex = row*9 + col
+  }
+  
+  // first half of [pencil] [clear] discord command
+  // second half is this.generateReply()
+  // clear all pencil markings at specified row and column
+  pencilClear = (row: number, col: number) => {}
 
   resetPuzzle = () => {}
 
   solveSudoku = () => {}
 
+  // second half of commands that change puzzle data in some way
+  // updates board, updates message, returns an embed to be attached to updated message in discord
   generateReply = async (message: Message) => {
     this.message = message;
-    return await this.generateSudokuEmbed();
+    const theme = await this.database.getTheme();
+    const board = this.imageHandler.createBoard(theme);
+    return await this.generateEmbed(board);
   }
 
-  changeDifficulty = (difficulty: string) => {}
-
+  // make sure command input data is valid
   verifyInput = (input: string[]): { verified: boolean, output: number[] } => {
     const output = [];
     let verified = true;
@@ -124,12 +120,12 @@ class SudokuHandler {
     return { verified: verified, output: [...output] }
   }
 
+  // [theme] command
   // updates database and session with new theme
   changeTheme = async (theme: string): Promise<InteractionReplyOptions> => {
-    this.regenerateBase = true;
-    this.regenerateData = true;
-    await this.database.changeTheme(theme);
-    return await this.generateSudokuEmbed();
+    const newTheme = await this.database.changeTheme(theme);
+    const board = this.imageHandler.regenerateAll(newTheme, this.puzzleData);
+    return await this.generateEmbed(board);
   }
   
 }

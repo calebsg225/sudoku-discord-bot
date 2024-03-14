@@ -115,14 +115,12 @@ class SudokuIamgeHandler {
           ctx.fillStyle = +defPuz[digitPointer] ? sudokuThemes[theme].base : sudokuThemes[theme].inputedDigit;
           ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval );
         } else {
+          // fill in pencil markings if any
           this.populatePencilMarkingsInSquare(i*interval*2, j*interval*2, marks.substring(digitPointer*9, digitPointer*9+9), ctx);
         }
         digitPointer++;
       }
     }
-
-    
-    // fill in pencil markings
   }
 
   // generate all pencil markings for one square
@@ -130,13 +128,16 @@ class SudokuIamgeHandler {
 
   }
 
-  updateCanvas = () => {}
+  togglePencilMarking = () => {}
 
-  regenerateBase = (theme: string) => {
-    this.createBase(theme);
-  }
   regenerateData = (theme: string, puzzleData: PuzzleData) => {
     this.populateBoard(theme, puzzleData);
+  }
+
+  regenerateAll = (theme: string, puzzleData: PuzzleData) => {
+    this.createBase(theme);
+    this.populateBoard(theme, puzzleData);
+    return this.createBoard(theme);
   }
 }
 

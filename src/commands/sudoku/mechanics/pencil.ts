@@ -42,10 +42,10 @@ export const pencil: SlashCommand = {
       });
     }
 
-    const sudokuSesion = interaction.client.sudokuSessions.get(user.id);
+    const sudokuSession = interaction.client.sudokuSessions.get(user.id);
 
     const positions = interaction.options.getNumber('position', true).toString().split('');
-    const { verified, output } = sudokuSesion.verifyInput(positions);
+    const { verified, output } = sudokuSession.verifyInput(positions);
     
     // verify user has inputed valid data
     if (!verified) {
@@ -61,16 +61,18 @@ export const pencil: SlashCommand = {
     const subCommand = interaction.options.getSubcommand();
 
     if (subCommand === 'place') {
+      // 'place' sub command
       const [ digit, row, column ] = output;
+      sudokuSession.pencilPlace(digit, row, column);
     } else {
+      // 'clear' sub command
       const [ row, column ] = output;
+      sudokuSession.pencilClear(row, column);
     }
 
+    await sudokuSession.message.delete();
+    const reply = await sudokuSession.generateReply(message);
 
-    // pencil data here
-
-    await interaction.editReply(`verified`);
-
-
+    await interaction.editReply(reply);
   }
 }
