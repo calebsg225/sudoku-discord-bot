@@ -3,7 +3,7 @@ type Theme = {
   background: string,
   base: string,
   inputedDigit: string,
-  highlightDigit: string,
+  highlightedDigit: string,
   solvedDigit: string
 }
 

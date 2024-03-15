@@ -4,7 +4,7 @@
     "background": "#000000",
     "base": "#414141",
     "inputedDigit": "#4e2e2e",
-    "highlightDigit": "b5b5b5",
+    "highlightedDigit": "#b5b5b5",
     "solvedDigit": "#376839"
   },
   "light": {
@@ -12,15 +12,15 @@
     "background": "#FFFFFF",
     "base": "#111111",
     "inputedDigit": "#3a4bcb",
-    "highlightDigit": "828282",
+    "highlightedDigit": "#828282",
     "solvedDigit": "#376839"
   },
   "red": {
     "id": "2",
-    "background": "#390000",
-    "base": "#770000",
+    "background": "#770000",
+    "base": "#390000",
     "inputedDigit": "#f58b0b",
-    "highlightDigit": "#fec758",
+    "highlightedDigit": "#fec758",
     "solvedDigit": "#9df38a"
   },
   "blue": {
@@ -28,7 +28,7 @@
     "background": "#002451",
     "base": "#0e1926",
     "inputedDigit": "#93bae5",
-    "highlightDigit": "#efee98",
+    "highlightedDigit": "#efee98",
     "solvedDigit": "#995d62"
   },
   "green": {
@@ -36,7 +36,7 @@
     "background": "#2FA15B",
     "base": "#1D4C0B",
     "inputedDigit": "#4D608F",
-    "highlightDigit": "#88C0D1",
+    "highlightedDigit": "#88C0D1",
     "solvedDigit": "#48C61E"
   },
   "pink": {
@@ -44,7 +44,7 @@
     "background": "#FF8CEC",
     "base": "#820055",
     "inputedDigit": "#FF0090",
-    "highlightDigit": "#FFFFFF",
+    "highlightedDigit": "#FFFFFF",
     "solvedDigit": "#FF2D65"
   }
 }
