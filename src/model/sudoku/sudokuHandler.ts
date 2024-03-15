@@ -128,6 +128,34 @@ class SudokuHandler {
     nums.forEach((num, i) => nums[i]--);
     return nums;
   }
+
+  pencil = async (digits: number[], row: number, col: number) => {
+    const theme = await this.database.getTheme();
+    [ row, col ] = this.zeroIndex([row, col]);
+    const digitIndex = row*9 + col;
+    const pencilGroupIndex = digitIndex*9;
+    
+    const { defaultPuzzle: defPuz, currentPuzzle: curPuz, pencilMarkings: marks } = this.puzzleData;
+    
+    // dont do anything if digit is a default digit;
+    if (+defPuz[digitIndex]) return;
+
+    if (+curPuz[digitIndex]) {
+      this.imageHandler.clearSquare(row, col);
+      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9));
+      this.updatePuzzleData('currentPuzzle', '0', digitIndex);
+    }
+
+    for (const digit of digits) {
+      if (+marks[pencilGroupIndex + digit - 1]) {
+        this.imageHandler.removePencilMarking(digit-1, row, col);
+        this.updatePuzzleData('pencilMarkings', '0', pencilGroupIndex + digit-1);
+      } else {
+        this.imageHandler.addPencilMarking(theme, digit-1, row, col);
+        this.updatePuzzleData('pencilMarkings', `${digit}`, pencilGroupIndex + digit-1);
+      }
+    }
+  }
   
   // first half of [pencil] [place] discord command
   // second half is this.generateReply()
@@ -178,17 +206,19 @@ class SudokuHandler {
   }
 
   // make sure command input data is valid
-  verifyInput = (input: string[]): { verified: boolean, output: number[] } => {
+  // removes duplicate nums if desired
+  verifyInput = (input: number, clean: boolean = false): { verified: boolean, output: number[] } => {
+    const digits = clean ? [...new Set(input.toString().split(''))] : input.toString().split('');
     const output = [];
     let verified = true;
-    for (const value of input) {
+    for (const value of digits) {
       if (!+value) {
         verified = false;
         break;
       };
       output.push(+value);
     }
-    return { verified: verified, output: [...output] }
+    return { verified: verified, output: output }
   }
 
   // first half of [theme] discord command

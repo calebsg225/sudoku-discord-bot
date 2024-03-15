@@ -9,26 +9,18 @@ export const pencil: SlashCommand = {
     .setName('pencil')
     .setDescription('place or clear pencil markings')
     .setDMPermission(false)
-    .addSubcommand(subCommand =>
-      subCommand.setName('clear')
-        .setDescription('clear selected square of all pencil markings')
-        .addNumberOption(option =>
-          option.setName('position')
-            .setDescription('[row, column], Ex. 29 would be row 2, column 9')
-            .setMinValue(11)
-            .setMaxValue(99)
-            .setRequired(true)
-        )
-    ).addSubcommand(subCommand =>
-      subCommand.setName('set')
-        .setDescription('add or remove a pencil marking in a specefied square')
-        .addNumberOption(option =>
-          option.setName('position')
-            .setDescription('[digit, row, column], Ex. 763 would be digit 7, row 6, column 3')
-            .setMinValue(111)
-            .setMaxValue(999)
-            .setRequired(true)
-        )
+    .addNumberOption(option =>
+      option.setName('digits')
+        .setDescription('digit(s) to toggle. Ex. 45 will toggle digits 4 and 5. Duplicates will count as one.')
+        .setMinValue(1)
+        .setMaxValue(999999999)
+        .setRequired(true)
+    ).addNumberOption(option =>
+      option.setName('position')
+        .setDescription('[row, column], Ex. 13 would be row 1, column 3.')
+        .setMinValue(11)
+        .setMaxValue(99)
+        .setRequired(true)
     )
   ,
   execute: async (interaction) => {
@@ -44,31 +36,24 @@ export const pencil: SlashCommand = {
 
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
 
-    const positions = interaction.options.getNumber('position', true).toString().split('');
-    const { verified, output } = sudokuSession.verifyInput(positions);
-    
+    const digits = interaction.options.getNumber('digits', true);
+    const position = interaction.options.getNumber('position', true);
+    const { verified: positionVerified, output: positionOutput } = sudokuSession.verifyInput(position);
+    const { verified: digitsVerified, output: digitsOutput } = sudokuSession.verifyInput(digits, true);
+
     // verify user has inputed valid data
-    if (!verified) {
+    if (!positionVerified || !digitsVerified) {
       return interaction.reply({
-        content: 'The position data you have entered is invalid. Please try again.',
+        content: 'The position or digit data you have entered is invalid. Please try again.',
         ephemeral: true
       });
     }
 
     await interaction.deferReply();
     const message = await interaction.fetchReply();
-
-    const subCommand = interaction.options.getSubcommand();
-
-    if (subCommand === 'set') {
-      // 'place' sub command
-      const [ digit, row, column ] = output;
-      await sudokuSession.pencilPlace(digit, row, column);
-    } else {
-      // 'clear' sub command
-      const [ row, column ] = output;
-      await sudokuSession.pencilClear(row, column);
-    }
+    
+    const [ row, column ] = positionOutput;
+    await sudokuSession.pencil(digitsOutput, row, column);
 
     await sudokuSession.message.delete();
     const reply = await sudokuSession.generateReply(message);

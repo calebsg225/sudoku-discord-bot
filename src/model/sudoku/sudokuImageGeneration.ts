@@ -140,6 +140,7 @@ class SudokuIamgeHandler {
   }
 
   private calculatePencilMarkLocation = (digit: number, row: number, col: number) => {
+    // digit is 0-indexed
     const interval = this.width/9
     
     const pencilCol = digit%3;
@@ -162,6 +163,7 @@ class SudokuIamgeHandler {
     col: number,
     ctx: Canvas.SKRSContext2D = this.board.getContext(this.context)
   ): void => {
+    // digit is 0-indexed
     const { xInterval, yInterval, pixelWidth } = this.calculatePencilMarkLocation(digit, row, col);
 
     ctx.textAlign = 'center';
@@ -178,6 +180,7 @@ class SudokuIamgeHandler {
     col: number,
     ctx: Canvas.SKRSContext2D = this.board.getContext(this.context)
   ): void => {
+    // digit is 0-indexed
     const { xInterval, yInterval, pencilInterval } = this.calculatePencilMarkLocation(digit, row, col);
 
     ctx.clearRect(
@@ -190,6 +193,7 @@ class SudokuIamgeHandler {
   }
 
   placeDigit = (theme: string, digit: number, row: number, col: number, ctx: Canvas.SKRSContext2D = this.board.getContext(this.context)) => {
+    // digit is 1-indexed
     const interval = this.width/18;
     const digitPadding = interval/6;
     const pixelWidth =this.width/9 - digitPadding*2;
@@ -213,10 +217,10 @@ class SudokuIamgeHandler {
     const interval = this.width/9;
 
     ctx.clearRect(
-      (col * interval) + this.lineThickness,
-      (row * interval) + this.lineThickness,
-      interval - (this.lineThickness * 2),
-      interval - (this.lineThickness * 2)
+      (col * interval) + this.lineThickness/6,
+      (row * interval) + this.lineThickness/6,
+      interval - (this.lineThickness/3),
+      interval - (this.lineThickness/3)
     );
   }
 

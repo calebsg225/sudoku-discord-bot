@@ -30,7 +30,7 @@ export const place: SlashCommand = {
 
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
 
-    const positions = interaction.options.getNumber('position', true).toString().split('');
+    const positions = interaction.options.getNumber('position', true);
     const { verified, output } = sudokuSession.verifyInput(positions);
 
     if (!verified) {
