@@ -90,7 +90,32 @@ class SudokuHandler {
     return reply;
   }
   
-  placeDigit = (row: number, col: number, digit: number) => {}
+  placeDigit = async (digit: number, row: number, col: number) => {
+    const theme = await this.database.getTheme();
+    [ row, col ] = this.zeroIndex([row, col]);
+    const digitIndex = row*9 + col;
+    const { currentPuzzle: curPuz, defaultPuzzle: defPuz, pencilMarkings: marks } = this.puzzleData;
+
+    if (+defPuz[digitIndex]) return;
+
+    this.imageHandler.clearSquare(row, col);
+
+    if (!+curPuz[digitIndex]) {
+      // there is no digit in specified location
+      this.imageHandler.placeDigit(theme, digit, row, col);
+      this.updatePuzzleData('currentPuzzle', `${digit}`, digitIndex);
+    }
+    else if (+curPuz[digitIndex] === digit) {
+      // the digit is already in specified location
+      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(digitIndex*9, digitIndex*9+9));
+      this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
+    }
+    else {
+      // 
+      this.imageHandler.placeDigit(theme, digit, row, col);
+      this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
+    }
+  }
   
   removeDigit = (row: number, col: number) => {}
   
@@ -114,10 +139,13 @@ class SudokuHandler {
     const pencilGroupIndex = digitIndex*9 + digit;
     const { defaultPuzzle: defPuz, currentPuzzle: curPuz, pencilMarkings: marks } = this.puzzleData;
 
+    if (+defPuz[digitIndex]) return;
+
     // if there is a digit placed here, remove it.
-    if (+curPuz[digitIndex] && !+defPuz[digitIndex]) {
+    if (+curPuz[digitIndex]) {
       this.imageHandler.clearSquare(row, col);
-      this.updatePuzzleData('currentPuzzle', `${digit+1}`, digitIndex);
+      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9));
+      this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
     }
     
     // toggle pencil marking in puzzle data and on board

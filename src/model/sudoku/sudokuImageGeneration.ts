@@ -125,12 +125,12 @@ class SudokuIamgeHandler {
   }
 
   // generate all pencil markings for one square
-  private populatePencilMarkingsInSquare = (
+  populatePencilMarkingsInSquare = (
     theme: string,
     row: number,
     col: number,
     pencilMarkings: string,
-    ctx: Canvas.SKRSContext2D
+    ctx: Canvas.SKRSContext2D = this.board.getContext(this.context)
   ) => {
     pencilMarkings.split('').forEach((digit) => {
       if (+digit) {
@@ -187,6 +187,24 @@ class SudokuIamgeHandler {
       pencilInterval*2
     );
 
+  }
+
+  placeDigit = (theme: string, digit: number, row: number, col: number, ctx: Canvas.SKRSContext2D = this.board.getContext(this.context)) => {
+    const interval = this.width/18;
+    const digitPadding = interval/6;
+    const pixelWidth =this.width/9 - digitPadding*2;
+
+    const xInterval = (col*interval*2) + interval;
+    const yInterval = (row*interval*2) + interval;
+
+    // center digit in square
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+
+    ctx.font = `${pixelWidth}px ${this.font}`;
+
+    ctx.fillStyle = sudokuThemes[theme].inputedDigit;
+    ctx.fillText(`${digit}`, xInterval, yInterval);
   }
 
   // remove digit or pencil markings from a square on the sudoku board
