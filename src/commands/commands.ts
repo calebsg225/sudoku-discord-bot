@@ -12,6 +12,7 @@ import { theme } from "./sudoku/user/theme";
 import { pencil } from "./sudoku/mechanics/pencil";
 import { place } from "./sudoku/mechanics/place";
 import { hl } from "./sudoku/mechanics/hl";
+import { reset } from "./sudoku/mechanics/reset";
 
 // create global commands collection to be mounted to client
 const globalCommands = new Collection<string, SlashCommand>()
@@ -22,6 +23,7 @@ const globalCommands = new Collection<string, SlashCommand>()
   .set(pencil.data.name, pencil)
   .set(place.data.name, place)
   .set(hl.data.name, hl)
+  .set(reset.data.name, reset)
 
 // create dev commands collection
 const devCommands = new Collection<string, SlashCommand>()

@@ -19,6 +19,7 @@ class SudokuHandler {
 
   private puzzleData: PuzzleData;
   private highlighted: number; // digit currently highlighted. 0 if none.
+  private defaultMarks: string;
 
   constructor(user: User) {
     this.user = user;
@@ -33,11 +34,13 @@ class SudokuHandler {
     const theme = await this.database.getTheme();
 
     this.message = message;
+    
+    this.highlighted = 0;
+    this.defaultMarks = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+
     this.setNewPuzzleData(difficulty);
 
-    this.highlighted = 0;
-
-    this.imageHandler.regenerateAll(theme, this.puzzleData, this.isHighlighted());
+    this.imageHandler.regenerateAll(theme, this.puzzleData, this.highlighted);
     const board = this.imageHandler.createBoard(theme);
     return await this.generateEmbed(board);
   }
@@ -48,7 +51,7 @@ class SudokuHandler {
   createNewPuzzle = async (difficulty: string) => {
     const theme = await this.database.getTheme();
     this.setNewPuzzleData(difficulty);
-    this.imageHandler.regenerateData(theme, this.puzzleData, this.isHighlighted());
+    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
   }
 
   private setNewPuzzleData = (difficulty: string) => {
@@ -57,7 +60,7 @@ class SudokuHandler {
       difficulty: difficulty,
       defaultPuzzle: puzzle,
       currentPuzzle: puzzle,
-      pencilMarkings: "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+      pencilMarkings: this.defaultMarks
     }
   }
   
@@ -113,7 +116,7 @@ class SudokuHandler {
     }
     else if (+curPuz[digitIndex] === digit) {
       // the digit is already in specified location
-      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(digitIndex*9, digitIndex*9+9), this.isHighlighted());
+      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(digitIndex*9, digitIndex*9+9), this.highlighted);
       this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
     }
     else {
@@ -122,8 +125,6 @@ class SudokuHandler {
       this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
     }
   }
-  
-  removeDigit = (row: number, col: number) => {}
   
   // first half of [hl] discord command
   // second half is this.generateReply()
@@ -191,7 +192,7 @@ class SudokuHandler {
 
     if (+curPuz[digitIndex]) {
       this.imageHandler.clearSquare(row, col);
-      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9), this.isHighlighted());
+      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9), this.highlighted);
       this.updatePuzzleData('currentPuzzle', '0', digitIndex);
     }
 
@@ -200,13 +201,22 @@ class SudokuHandler {
         this.imageHandler.removePencilMarking(digit-1, row, col);
         this.updatePuzzleData('pencilMarkings', '0', pencilGroupIndex + digit-1);
       } else {
-        this.imageHandler.addPencilMarking(theme, digit-1, row, col, this.isHighlighted());
+        this.imageHandler.addPencilMarking(theme, digit-1, row, col, this.highlighted === digit);
         this.updatePuzzleData('pencilMarkings', `${digit}`, pencilGroupIndex + digit-1);
       }
     }
   }
 
-  resetPuzzle = () => {}
+  // first half of [reset] discord command
+  // second half is this.generateReply()
+  // resets puzzle data
+  resetPuzzle = async () => {
+    const theme = await this.database.getTheme();
+    this.highlighted = 0;
+    this.puzzleData.currentPuzzle = this.puzzleData.defaultPuzzle;
+    this.puzzleData.pencilMarkings = this.defaultMarks;
+    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
+  }
 
   solveSudoku = () => {}
 
@@ -239,7 +249,7 @@ class SudokuHandler {
   // updates database and session with new theme
   changeTheme = async (theme: string) => {
     const newTheme = await this.database.changeTheme(theme);
-    this.imageHandler.regenerateAll(newTheme, this.puzzleData, this.isHighlighted());
+    this.imageHandler.regenerateAll(newTheme, this.puzzleData, this.highlighted);
   }
   
 }
