@@ -2,6 +2,7 @@
 
 import mongoose from "mongoose";
 import { SudokuUsers, SudokuGame, Preferences } from "../../schemas/sudoku/sudokuUsers";
+import { PuzzleData } from "./types/sudokuTypes";
 
 class SudokuDatabaseHandler {
   userId: string
@@ -31,9 +32,49 @@ class SudokuDatabaseHandler {
     }).save().catch(console.error);
   }
 
+  // fetches and returns user data
+  private fetchUserData = async () => {
+    return await SudokuUsers.findOne({discordUserId: this.userId});
+  }
+
+  // add a game to saved games or completed games
+  addGame = async (puzzleData: PuzzleData, completedGame: boolean = false) => {
+    const sudokuUserData = await this.fetchUserData();
+    
+    const { defaultPuzzle, currentPuzzle, pencilMarkings, difficulty } = puzzleData;
+    const newGame = new SudokuGame({
+      difficulty: difficulty,
+      currentPuzzle: currentPuzzle,
+      pencilMarkings: pencilMarkings
+    });
+
+    completedGame ? sudokuUserData.completedGames.set(defaultPuzzle, newGame)
+                  : sudokuUserData.savedGames.set(defaultPuzzle, newGame);
+    await sudokuUserData.save();
+  }
+
+  // get all previously saved games from database
+  getSavedGames = async (): Promise<Map<string, any>> => {
+    const sudokuUserData = await this.fetchUserData();
+    return sudokuUserData.savedGames;
+  }
+
+  // delete a saved game from database
+  deleteSavedGame = async (gameToDelete: string): Promise<void> => {
+    const sudokuUserData = await this.fetchUserData();
+    sudokuUserData.savedGames.delete(gameToDelete);
+    await sudokuUserData.save();
+  }
+
+  // get all previously completed games from database
+  getCompletedGames = async (): Promise<Map<string, any>> => {
+    const sudokuUserData = await this.fetchUserData();
+    return sudokuUserData.completedGames;
+  }
+
   // get current theme from user preferences
   getTheme = async (): Promise<string> => {
-    const sudokuUserData = await SudokuUsers.findOne({discordUserId: this.userId});
+    const sudokuUserData = await this.fetchUserData();
     return sudokuUserData.preferences.theme;
   }
 

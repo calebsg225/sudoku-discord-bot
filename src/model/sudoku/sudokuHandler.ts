@@ -31,6 +31,8 @@ class SudokuHandler {
   // [sudoku] discord command
   // handles initial puzzle creation and embed generation
   init = async (difficulty: string, message: Message): Promise<InteractionReplyOptions> => {
+    const savedGames = await this.database.getSavedGames();
+    const completedGames = await this.database.getCompletedGames();
     const theme = await this.database.getTheme();
 
     this.message = message;
@@ -38,7 +40,7 @@ class SudokuHandler {
     this.highlighted = 0;
     this.defaultMarks = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
-    this.setNewPuzzleData(difficulty);
+    this.setNewPuzzleData(difficulty, savedGames, completedGames);
 
     this.imageHandler.regenerateAll(theme, this.puzzleData, this.highlighted);
     const board = this.imageHandler.createBoard(theme);
@@ -49,13 +51,16 @@ class SudokuHandler {
   // second half is this.generateReply()
   // sets new sudoku puzzle
   createNewPuzzle = async (difficulty: string) => {
+    const savedGames = await this.database.getSavedGames();
+    const completedGames = await this.database.getCompletedGames();
     const theme = await this.database.getTheme();
-    this.setNewPuzzleData(difficulty);
+
+    this.setNewPuzzleData(difficulty, savedGames, completedGames);
     this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
   }
 
-  private setNewPuzzleData = (difficulty: string) => {
-    const puzzle = this.getNewLine(difficulty);
+  private setNewPuzzleData = (difficulty: string, savedGames: Map<string, any>, completedGames: Map<string, any>) => {
+    const puzzle = this.getNewLine(difficulty, savedGames, completedGames);
     this.puzzleData = {
       difficulty: difficulty,
       defaultPuzzle: puzzle,
@@ -76,7 +81,7 @@ class SudokuHandler {
   }
   
   // gets a new puzzle from txt file containing puzzles of specified difficulty
-  private getNewLine = (difficulty: string) => {
+  private getNewLine = (difficulty: string, savedGames, completedGames) => {
     const lines = fs.readFileSync(`${sudokuPuzzlePath}${difficulty.toLowerCase()}.txt`).toString().split(`\n`);
     const randomLine = lines[Math.floor(Math.random() * lines.length)];
     return randomLine.substring(13, 94);
@@ -220,7 +225,7 @@ class SudokuHandler {
 
   solveSudoku = () => {}
 
-  // second half of commands that change puzzle data in some way
+  // final part of commands that update puzzle data in some way
   // updates board, updates message, returns an embed to be attached to updated message in discord
   generateReply = async (message: Message) => {
     this.message = message;
@@ -250,6 +255,11 @@ class SudokuHandler {
   changeTheme = async (theme: string) => {
     const newTheme = await this.database.changeTheme(theme);
     this.imageHandler.regenerateAll(newTheme, this.puzzleData, this.highlighted);
+  }
+
+  // used in the [save] and [quit] discord commands
+  saveGame = async (): Promise<void> => {
+    await this.database.addGame(this.puzzleData);
   }
   
 }
