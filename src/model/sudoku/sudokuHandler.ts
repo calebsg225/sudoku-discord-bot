@@ -81,9 +81,13 @@ class SudokuHandler {
   }
   
   // gets a new puzzle from txt file containing puzzles of specified difficulty
-  private getNewLine = (difficulty: string, savedGames, completedGames) => {
+  private getNewLine = (difficulty: string, savedGames: Map<string, any>, completedGames: Map<string, any>) => {
     const lines = fs.readFileSync(`${sudokuPuzzlePath}${difficulty.toLowerCase()}.txt`).toString().split(`\n`);
-    const randomLine = lines[Math.floor(Math.random() * lines.length)];
+    let randomLine: string;
+    do {
+      randomLine = lines[Math.floor(Math.random() * lines.length)];
+    }
+    while ( completedGames.has(randomLine) || savedGames.has(randomLine) );
     return randomLine.substring(13, 94);
   }
   
@@ -256,6 +260,8 @@ class SudokuHandler {
     const newTheme = await this.database.changeTheme(theme);
     this.imageHandler.regenerateAll(newTheme, this.puzzleData, this.highlighted);
   }
+
+  viewSaved = async () => {}
 
   // used in the [save] and [quit] discord commands
   saveGame = async (): Promise<void> => {
