@@ -36,6 +36,14 @@ export const pencil: SlashCommand = {
 
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
 
+    // verify user is not viewing games
+    if (sudokuSession.viewMode) {
+      return interaction.reply({
+        content: "You are in view mode.\nPress `Exit` to leave view mode.",
+        ephemeral: true
+      });
+    }
+
     const digits = interaction.options.getNumber('digits', true);
     const position = interaction.options.getNumber('position', true);
     const { verified: positionVerified, output: positionOutput } = sudokuSession.verifyInput(position);

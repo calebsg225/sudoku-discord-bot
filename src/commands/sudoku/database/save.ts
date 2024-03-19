@@ -22,9 +22,17 @@ export const save: SlashCommand = {
       });
     }
 
-    await interaction.deferReply({ephemeral: true});
-
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
+
+    // verify user is not viewing games
+    if (sudokuSession.viewMode) {
+      return interaction.reply({
+        content: "You are in view mode.\nPress `Exit` to leave view mode.",
+        ephemeral: true
+      });
+    }
+
+    await interaction.deferReply({ephemeral: true});
 
     try {
       // try to save game

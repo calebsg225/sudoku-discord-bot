@@ -30,6 +30,14 @@ export const place: SlashCommand = {
 
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
 
+    // verify user is not viewing games
+    if (sudokuSession.viewMode) {
+      return interaction.reply({
+        content: "You are in view mode.\nPress `Exit` to leave view mode.",
+        ephemeral: true
+      });
+    }
+
     const positions = interaction.options.getNumber('position', true);
     const { verified, output } = sudokuSession.verifyInput(positions);
 

@@ -29,13 +29,20 @@ export const theme: SlashCommand = {
       });
     }
 
+    const sudokuSession = interaction.client.sudokuSessions.get(userId);
+
+    // verify user is not viewing games
+    if (sudokuSession.viewMode) {
+      return interaction.reply({
+        content: "You are in view mode.\nPress `Exit` to leave view mode.",
+        ephemeral: true
+      });
+    }
+
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
     const theme = interaction.options.getString('name', true);
-
-    // get user session data
-    const sudokuSession = interaction.client.sudokuSessions.get(userId);
 
     // updates database and session with new theme
     await sudokuSession.changeTheme(theme);

@@ -1,5 +1,5 @@
-// move both [saved] and [completed] commands here
-// view saved games and optionally load them
+// view saved games and optionally load or delete them
+// view completed games
 
 import { ButtonInteraction, ComponentType, SlashCommandBuilder} from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
@@ -32,7 +32,7 @@ export const view: SlashCommand = {
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
     
     // verify user is not already viewing games
-    if (sudokuSession.viewing) {
+    if (sudokuSession.viewMode) {
       return interaction.reply({
         content: "You are already in view mode.\nPress `Exit` to stop viewing your games.",
         ephemeral: true

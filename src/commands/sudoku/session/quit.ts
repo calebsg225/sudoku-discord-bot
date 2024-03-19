@@ -20,6 +20,7 @@ export const quit: SlashCommand = {
   execute: async (interaction) => {
     const user = interaction.user;
 
+    // verify user has started a session
     if (!interaction.client.sudokuSessions.has(user.id)) {
       return interaction.reply({
         content: `You are not in a sudoku session.\n Please use \`/sudoku\` to begin a session.`,
@@ -27,9 +28,9 @@ export const quit: SlashCommand = {
       });
     }
 
-    await interaction.deferReply();
-
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
+
+    await interaction.deferReply();
 
     const saveCurrentGame = interaction.options.getString('save', true);
 

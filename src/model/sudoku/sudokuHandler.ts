@@ -72,6 +72,7 @@ class SudokuHandler {
     }
   }
   
+  // used to update puzzle data when using the [place] and [pencil] commands
   private updatePuzzleData = (valueToUpdate: string, newValue: string, index: number = -1) => {
     if (index < 0) {
       this.puzzleData.difficulty = newValue;
@@ -321,6 +322,7 @@ class SudokuHandler {
     return games;
   }
 
+  // [left] and [right] buttons for [view] discord command
   // move left or right
   shiftGame = async (viewType: ViewModeType, direction: "left" | "right") => {
     const theme = await this.database.getTheme();
@@ -347,6 +349,7 @@ class SudokuHandler {
     return updatedReply;
   }
 
+  // [load] button for [view] discord command
   // load saved game
   loadSavedGame = async (message: Message) => {
     const theme = await this.database.getTheme();
@@ -362,6 +365,7 @@ class SudokuHandler {
     return await this.generateReply(message);
   }
 
+  // [delete] button for [view] discord command
   // delete saved game
   deleteSavedGame = async () => {
     await this.database.deleteSavedGame(this.games[this.viewing].defaultPuzzle);
@@ -380,6 +384,8 @@ class SudokuHandler {
     }
   }
 
+  // [exit] button for [view] discord command
+  // also the way to exit view mode for [delete] button and timeout
   // exit viewing mode
   exitViewingMode = async (message: Message, deleteCurrent: boolean = false) => {
     if (deleteCurrent) await this.database.deleteSavedGame(this.games[this.viewing].defaultPuzzle);
@@ -393,6 +399,8 @@ class SudokuHandler {
     return await this.generateReply(message);
   }
 
+  // check that there is at least one game to view
+  // used for [delete] button
   hasOne = () => {
     return this.games.length === 1;
   }
@@ -410,6 +418,7 @@ class SudokuHandler {
 
 
   // main section of [saved] and [completed] discord commands
+  // linked to buttons [left] [right] [load] [save] [exit]
   // used to view games in database, if any
   view = async (message: Message, viewType: ViewModeType) => {
     this.viewMode = true;

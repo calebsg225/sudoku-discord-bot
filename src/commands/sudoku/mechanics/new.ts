@@ -26,14 +26,21 @@ export const _new: SlashCommand = {
         ephemeral: true
       });
     }
+    
+    const sudokuSession = interaction.client.sudokuSessions.get(userId);
+
+    // verify user is not viewing games
+    if (sudokuSession.viewMode) {
+      return interaction.reply({
+        content: "You are in view mode.\nPress `Exit` to leave view mode.",
+        ephemeral: true
+      });
+    }
 
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
     const difficulty = interaction.options.getString('difficulty', true);
-
-    // get user session data
-    const sudokuSession = interaction.client.sudokuSessions.get(userId);
 
     // generate a new puzzle
     await sudokuSession.createNewPuzzle(difficulty);
