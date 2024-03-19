@@ -23,4 +23,9 @@ const decisionChoices = [
   { name: 'No', value: '0' }
 ];
 
-export { difficultyChoices, themeChoices, decisionChoices };
+const viewChoices = [
+  { name: "Saved Games", value: "Saved" },
+  { name: "Completed Games", value: "Completed" }
+];
+
+export { difficultyChoices, themeChoices, decisionChoices, viewChoices };

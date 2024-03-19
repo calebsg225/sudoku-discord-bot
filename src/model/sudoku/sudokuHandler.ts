@@ -107,7 +107,7 @@ class SudokuHandler {
   // generates embed for viewing saved or completed games
   private generateViewingEmbed = async (board: Canvas.Canvas, title: string, gameCount: number, viewingType: "Completed" | "Saved") => {
     const {embed, attachment} = await this.generateBaseEmbed(board, title);
-    embed.setDescription(`Difficulty: ${this.games[this.viewing].difficulty}`);
+    embed.setDescription(`Difficulty: \`${this.games[this.viewing].difficulty}\``);
     embed.setFooter({text: `${this.viewing+1}/${gameCount} ${viewingType} Games`});
     return {embed, attachment};
   }

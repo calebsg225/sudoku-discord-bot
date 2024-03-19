@@ -1,15 +1,22 @@
+// move both [saved] and [completed] commands here
 // view saved games and optionally load them
 
-import { ButtonInteraction, ChatInputCommandInteraction, ComponentType, SlashCommandBuilder} from "discord.js";
+import { ButtonInteraction, ComponentType, SlashCommandBuilder} from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
+import { viewChoices } from "../../../model/sudoku/choices";
 
-export const saved: SlashCommand = {
+export const view: SlashCommand = {
   path: 'sudoku/database',
   data: new SlashCommandBuilder()
-    .setName('saved')
-    .setDescription('view, load, and delete saved games')
+    .setName('view')
+    .setDescription('View, load, and delete saved games. View completed games.')
     .setDMPermission(false)
-  ,
+    .addStringOption(option =>
+      option.setName('type')
+        .setDescription('select to view saved or completed games')
+        .setChoices(...viewChoices)
+        .setRequired(true)
+    ),
   execute: async (interaction) => {
     const user = interaction.user;
 
@@ -26,17 +33,22 @@ export const saved: SlashCommand = {
     // verify user is not already viewing games
     if (sudokuSession.viewing) {
       return interaction.reply({
-        content: "You are already viewing your games.\nPress exit to stop viewing your games.",
+        content: "You are already in view mode.\nPress `Exit` to stop viewing your games.",
         ephemeral: true
       });
     }
     
     await interaction.deferReply();
     const message = await interaction.fetchReply();
+
+    const viewType = interaction.options.getString('type', true);
+
+    // converting to make typescript happy...
+    const newViewType: "Saved" | "Completed" = viewType === "Completed" ? "Completed" : "Saved";
     
     await sudokuSession.message.delete();
 
-    const reply = await sudokuSession.view(message, "Saved");
+    const reply = await sudokuSession.view(message, newViewType);
     
     const response = await interaction.editReply(reply);
 
@@ -52,38 +64,27 @@ export const saved: SlashCommand = {
     collector.on('collect', async i => {
       switch (i.customId) {
         case ("left"):
-          await i.update(await sudokuSession.shiftGame("Saved", "left"));
+          await i.update(await sudokuSession.shiftGame(newViewType, "left"));
           break;
         case ("right"):
-          await i.update(await sudokuSession.shiftGame("Saved", "right"));
+          await i.update(await sudokuSession.shiftGame(newViewType, "right"));
           break;
         case ("load"):
           await i.deferReply();
-          const mess = await i.fetchReply();
           await sudokuSession.message.delete();
-          const loadReply = await sudokuSession.loadSavedGame(mess);
+          const loadReply = await sudokuSession.loadSavedGame(await i.fetchReply());
           await i.editReply(loadReply);
           break;
         case ("delete"):
           break;
         case ("exit"):
           await i.deferReply();
-          const mes = await i.fetchReply();
           await sudokuSession.message.delete();
-          const exitReply = await sudokuSession.exitViewingMode(mes);
+          const exitReply = await sudokuSession.exitViewingMode(await i.fetchReply());
           await i.editReply(exitReply);
           break;
       }
     });
-
-    // @[user]'s Saved Games
-    // difficulty: [difficulty]
-    // [image of game]
-    // game 1 out of ??                       <-- should i do this? yes
-
-    // buttons: [left] [right] [load] [delete] [exit]
-
-    // this message will be updated instead of replaced every time a button is pressed.
 
   }
 }
