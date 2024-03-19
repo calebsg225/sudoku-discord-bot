@@ -107,7 +107,7 @@ class SudokuHandler {
   // generates embed for viewing saved or completed games
   private generateViewingEmbed = async (board: Canvas.Canvas, title: string, gameCount: number, viewingType: "Completed" | "Saved") => {
     const {embed, attachment} = await this.generateBaseEmbed(board, title);
-    embed.setDescription(`Difficulty: ${this.puzzleData.difficulty}`);
+    embed.setDescription(`Difficulty: ${this.games[this.viewing].difficulty}`);
     embed.setFooter({text: `${this.viewing+1}/${gameCount} ${viewingType} Games`});
     return {embed, attachment};
   }
@@ -348,7 +348,19 @@ class SudokuHandler {
   }
 
   // load saved game
-  loadSavedGame = async (viewType: "Completed" | "Saved") => {}
+  loadSavedGame = async (message: Message) => {
+    const theme = await this.database.getTheme();
+
+    this.puzzleData = this.games[this.viewing];
+    this.highlighted = 0;
+
+    this.viewMode = false;
+    delete this.games;
+    delete this.viewing;
+
+    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
+    return await this.generateReply(message);
+  }
 
   // delete saved game
   deleteSavedGame = async (viewType: "Completed" | "Saved") => {}
@@ -356,9 +368,11 @@ class SudokuHandler {
   // exit viewing mode
   exitViewingMode = async (message: Message) => {
     const theme = await this.database.getTheme();
+
     this.viewMode = false;
     delete this.games;
     delete this.viewing;
+
     this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
     return await this.generateReply(message);
   }

@@ -58,6 +58,11 @@ export const saved: SlashCommand = {
           await i.update(await sudokuSession.shiftGame("Saved", "right"));
           break;
         case ("load"):
+          await i.deferReply();
+          const mess = await i.fetchReply();
+          await sudokuSession.message.delete();
+          const loadReply = await sudokuSession.loadSavedGame(mess);
+          await i.editReply(loadReply);
           break;
         case ("delete"):
           break;
@@ -65,8 +70,8 @@ export const saved: SlashCommand = {
           await i.deferReply();
           const mes = await i.fetchReply();
           await sudokuSession.message.delete();
-          const reply = await sudokuSession.exitViewingMode(mes);
-          await i.editReply(reply);
+          const exitReply = await sudokuSession.exitViewingMode(mes);
+          await i.editReply(exitReply);
           break;
       }
     });
