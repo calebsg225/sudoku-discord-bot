@@ -21,10 +21,15 @@ export const saved: SlashCommand = {
       });
     }
 
-    const sudokuSession = interaction.client.sudokuSessions.get(user.id);
-
     await interaction.deferReply();
     const message = await interaction.fetchReply();
+
+    const sudokuSession = interaction.client.sudokuSessions.get(user.id);
+
+    await sudokuSession.message.delete();
+
+    const reply = await sudokuSession.view(message, "Saved");
+    
 
     // @[user]'s Saved Games
     // difficulty: [difficulty]
@@ -34,5 +39,7 @@ export const saved: SlashCommand = {
     // buttons: [left] [right] [load] [delete] [exit]
 
     // this message will be updated instead of replaced every time a button is pressed.
+
+    await interaction.editReply(reply);
   }
 }

@@ -2,7 +2,7 @@ import SudokuIamgeHandler from "./sudokuImageGeneration";
 import SudokuSolver from "./sudokuSolver";
 import SudokuDatabaseHandler from "./sudokuDatabase";
 import { PuzzleData } from "./types/sudokuTypes";
-import { AttachmentBuilder, EmbedBuilder, InteractionReplyOptions, Message, User } from "discord.js";
+import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, InteractionReplyOptions, Message, User } from "discord.js";
 import Canvas from "@napi-rs/canvas";
 import fs from "node:fs";
 
@@ -16,6 +16,9 @@ class SudokuHandler {
   
   message: Message; // discord message of previous sudoku image
   user: User; // user the session belongs to
+
+  viewMode: boolean; // true if viewing saved or completed games
+  viewing: number; // index of games array currently being viewed
 
   private puzzleData: PuzzleData;
   private highlighted: number; // digit currently highlighted. 0 if none.
@@ -34,17 +37,16 @@ class SudokuHandler {
     const savedGames = await this.database.getSavedGames();
     const completedGames = await this.database.getCompletedGames();
     const theme = await this.database.getTheme();
-
-    this.message = message;
     
     this.highlighted = 0;
     this.defaultMarks = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
 
+    this.viewMode = false;
+
     this.setNewPuzzleData(difficulty, savedGames, completedGames);
 
     this.imageHandler.regenerateAll(theme, this.puzzleData, this.highlighted);
-    const board = this.imageHandler.createBoard(theme);
-    return await this.generateEmbed(board);
+    return await this.generateReply(message);
   }
 
   // first half of [new] discord command
@@ -91,18 +93,56 @@ class SudokuHandler {
     return randomLine.substring(13, 94);
   }
   
-  // generates discord embed given a sudoku board canvas
-  private generateEmbed = async (board: Canvas.Canvas) => {
+  // generates base discord embed used for all scenerios
+  private generateBaseEmbed = async (board: Canvas.Canvas, title: string) => {
     const attachment = new AttachmentBuilder(await board.encode('png'), { name: "sudoku.png" });
-    const sudokuEmbed = new EmbedBuilder()
-    .setTitle(`@${this.user.displayName}'s Sudoku, Difficulty: \`${this.puzzleData.difficulty}\``)
-    .setImage('attachment://sudoku.png')
-    .setColor('DarkButNotBlack');
-    const reply = {
-      embeds: [sudokuEmbed],
-      files: [attachment]
+    const embed = new EmbedBuilder()
+      .setTitle(title)
+      .setImage('attachment://sudoku.png')
+      .setColor('DarkButNotBlack');
+    return {embed, attachment};
+  }
+
+  // generates embed for viewing saved or completed games
+  private generateViewingEmbed = async (board: Canvas.Canvas, title: string, gameCount: number, viewingType: "Completed" | "Saved") => {
+    const {embed, attachment} = await this.generateBaseEmbed(board, title);
+    embed.setDescription(`Difficulty: ${this.puzzleData.difficulty}`);
+    embed.setFooter({text: `1/${gameCount} ${viewingType} Games`});
+    return {embed, attachment};
+  }
+
+  // make buttons for nav for viewing saved or completed games
+  private makeButton = (id: string, label: string, style: ButtonStyle, disabled: boolean = false): ButtonBuilder => {
+    return new ButtonBuilder()
+      .setCustomId(id)
+      .setLabel(label)
+      .setStyle(style)
+      .setDisabled(disabled)
+  }
+
+  private buttonRowGenerator = (writeAccess: boolean): ActionRowBuilder => {
+    const buttons = [];
+    // add [left] and [right] arrow buttons for navigation
+    buttons.push(...[
+      this.makeButton('left', '<=', ButtonStyle.Primary, true),
+      this.makeButton('right', '=>', ButtonStyle.Primary)
+    ]);
+
+    // add [load] and [delete] options for viewing saved games
+    if (writeAccess) {
+      buttons.push(...[
+        this.makeButton('load', 'Load', ButtonStyle.Success),
+        this.makeButton('delete', 'Delete', ButtonStyle.Danger)
+      ]);
     }
-    return reply;
+
+    // add [exit] button for leaving the menu
+    buttons.push(
+      this.makeButton('exit', 'Exit', ButtonStyle.Secondary)
+    );
+
+    return new ActionRowBuilder().addComponents(...buttons);
+
   }
   
   // first half of [place] discord command
@@ -235,7 +275,13 @@ class SudokuHandler {
     this.message = message;
     const theme = await this.database.getTheme();
     const board = this.imageHandler.createBoard(theme);
-    return await this.generateEmbed(board);
+    const title = `@${this.user.displayName}'s Sudoku, Difficulty: \`${this.puzzleData.difficulty}\``;
+    const { embed, attachment } = await this.generateBaseEmbed(board, title);
+    const reply = {
+      embeds: [embed],
+      files: [attachment]
+    }
+    return reply;
   }
 
   // make sure command input data is valid
@@ -260,8 +306,46 @@ class SudokuHandler {
     const newTheme = await this.database.changeTheme(theme);
     this.imageHandler.regenerateAll(newTheme, this.puzzleData, this.highlighted);
   }
+  
+  private generateViewPuzzleData = (inputGames: Map<string, any>) => {
+    const games: PuzzleData[] = [];
+    inputGames.forEach((v, k) => {
+      games.push({
+        difficulty: v.difficulty,
+        defaultPuzzle: k,
+        currentPuzzle: v.currentPuzzle,
+        pencilMarkings: v.pencilMarkings
+      });
+    });
+    return games;
+  }
 
-  viewSaved = async () => {}
+  view = async (message: Message, viewType: "Completed" | "Saved") => {
+    this.viewMode = true;
+    this.message = message;
+
+    const theme = await this.database.getTheme();
+
+    const games = this.generateViewPuzzleData(viewType === "Saved" ? await this.database.getSavedGames() : await this.database.getCompletedGames());
+    const gameCount = games.length;
+
+    // generate first of saved or completed games with no highlights
+    this.imageHandler.regenerateData(theme, games[0], 0);
+    const board = this.imageHandler.createBoard(theme);
+
+    // generate embed and attachment for veiwing menu
+    const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s ${viewType} Games`, gameCount, viewType);
+
+    // generate button row for interacting with menu
+    const buttons = this.buttonRowGenerator(viewType === "Saved");
+
+    const reply = {
+      embeds: [embed],
+      files: [attachment],
+      components: [buttons]
+    }
+    return reply;
+  }
 
   // used in the [save] and [quit] discord commands
   saveGame = async (): Promise<void> => {
