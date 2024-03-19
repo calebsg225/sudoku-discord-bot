@@ -18,7 +18,8 @@ class SudokuHandler {
   user: User; // user the session belongs to
 
   viewMode: boolean; // true if viewing saved or completed games
-  viewing: number; // index of games array currently being viewed
+  viewing: number; // index of game currently being viewed
+  games: PuzzleData[]; // games being viewed. Empty if not in viewing mode.
 
   private puzzleData: PuzzleData;
   private highlighted: number; // digit currently highlighted. 0 if none.
@@ -107,24 +108,23 @@ class SudokuHandler {
   private generateViewingEmbed = async (board: Canvas.Canvas, title: string, gameCount: number, viewingType: "Completed" | "Saved") => {
     const {embed, attachment} = await this.generateBaseEmbed(board, title);
     embed.setDescription(`Difficulty: ${this.puzzleData.difficulty}`);
-    embed.setFooter({text: `1/${gameCount} ${viewingType} Games`});
+    embed.setFooter({text: `${this.viewing+1}/${gameCount} ${viewingType} Games`});
     return {embed, attachment};
   }
 
   // make buttons for nav for viewing saved or completed games
-  private makeButton = (id: string, label: string, style: ButtonStyle, disabled: boolean = false): ButtonBuilder => {
+  private makeButton = (id: string, label: string, style: ButtonStyle) => {
     return new ButtonBuilder()
       .setCustomId(id)
       .setLabel(label)
       .setStyle(style)
-      .setDisabled(disabled)
   }
 
-  private buttonRowGenerator = (writeAccess: boolean): ActionRowBuilder => {
+  private buttonRowGenerator = (writeAccess: boolean): ActionRowBuilder<ButtonBuilder> => {
     const buttons = [];
     // add [left] and [right] arrow buttons for navigation
     buttons.push(...[
-      this.makeButton('left', '<=', ButtonStyle.Primary, true),
+      this.makeButton('left', '<=', ButtonStyle.Primary),
       this.makeButton('right', '=>', ButtonStyle.Primary)
     ]);
 
@@ -141,7 +141,7 @@ class SudokuHandler {
       this.makeButton('exit', 'Exit', ButtonStyle.Secondary)
     );
 
-    return new ActionRowBuilder().addComponents(...buttons);
+    return new ActionRowBuilder<ButtonBuilder>().addComponents(...buttons);
 
   }
   
@@ -307,6 +307,7 @@ class SudokuHandler {
     this.imageHandler.regenerateAll(newTheme, this.puzzleData, this.highlighted);
   }
   
+  // converts map of saved or completed games to an array contianing puzzle data
   private generateViewPuzzleData = (inputGames: Map<string, any>) => {
     const games: PuzzleData[] = [];
     inputGames.forEach((v, k) => {
@@ -320,21 +321,65 @@ class SudokuHandler {
     return games;
   }
 
+  // move left or right
+  shiftGame = async (viewType: "Completed" | "Saved", direction: "left" | "right") => {
+    const theme = await this.database.getTheme();
+
+    if (direction === "left") {
+      this.viewing--;
+      if (this.viewing < 0) {
+        this.viewing = this.games.length - 1;
+      }
+    } else {
+      this.viewing++;
+      if (this.viewing >= this.games.length) {
+        this.viewing = 0;
+      }
+    }
+    this.imageHandler.regenerateData(theme, this.games[this.viewing], 0);
+    const board = this.imageHandler.createBoard(theme);
+
+    const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s ${viewType} Games`, this.games.length, viewType);
+    const updatedReply = {
+      embeds: [embed],
+      files: [attachment]
+    }
+    return updatedReply;
+  }
+
+  // load saved game
+  loadSavedGame = async (viewType: "Completed" | "Saved") => {}
+
+  // delete saved game
+  deleteSavedGame = async (viewType: "Completed" | "Saved") => {}
+
+  // exit viewing mode
+  exitViewingMode = async (viewType: "Completed" | "Saved") => {
+    const theme = await this.database.getTheme();
+
+    this.viewMode = false;
+    delete this.games;
+    delete this.viewing;
+  }
+
+
+  // main section of [saved] and [completed] discord commands
+  // used to view games in database, if any
   view = async (message: Message, viewType: "Completed" | "Saved") => {
     this.viewMode = true;
     this.message = message;
 
     const theme = await this.database.getTheme();
 
-    const games = this.generateViewPuzzleData(viewType === "Saved" ? await this.database.getSavedGames() : await this.database.getCompletedGames());
-    const gameCount = games.length;
+    this.games = this.generateViewPuzzleData(viewType === "Saved" ? await this.database.getSavedGames() : await this.database.getCompletedGames());
+    this.viewing = 0;
 
     // generate first of saved or completed games with no highlights
-    this.imageHandler.regenerateData(theme, games[0], 0);
+    this.imageHandler.regenerateData(theme, this.games[this.viewing], 0);
     const board = this.imageHandler.createBoard(theme);
 
     // generate embed and attachment for veiwing menu
-    const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s ${viewType} Games`, gameCount, viewType);
+    const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s ${viewType} Games`, this.games.length, viewType);
 
     // generate button row for interacting with menu
     const buttons = this.buttonRowGenerator(viewType === "Saved");
