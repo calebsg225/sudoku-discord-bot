@@ -22,15 +22,17 @@ export const save: SlashCommand = {
       });
     }
 
+    await interaction.deferReply({ephemeral: true});
+
     const sudokuSession = interaction.client.sudokuSessions.get(user.id);
 
     try {
       // try to save game
       await sudokuSession.saveGame();
-      await interaction.channel.send(`<@${user.id}> Your game was saved.`);
+      await interaction.editReply(`<@${user.id}> Your game was saved.`);
     } catch (error) {
       console.error(chalk.red(error));
-      await interaction.channel.send(`<@${user.id}> An error occured while trying to save your game.`);
+      await interaction.editReply(`<@${user.id}> An error occured while trying to save your game.`);
     }
 
   }
