@@ -354,12 +354,13 @@ class SudokuHandler {
   deleteSavedGame = async (viewType: "Completed" | "Saved") => {}
 
   // exit viewing mode
-  exitViewingMode = async (viewType: "Completed" | "Saved") => {
+  exitViewingMode = async (message: Message) => {
     const theme = await this.database.getTheme();
-
     this.viewMode = false;
     delete this.games;
     delete this.viewing;
+    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
+    return await this.generateReply(message);
   }
 
 

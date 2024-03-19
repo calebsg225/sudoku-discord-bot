@@ -62,6 +62,11 @@ export const saved: SlashCommand = {
         case ("delete"):
           break;
         case ("exit"):
+          await i.deferReply();
+          const mes = await i.fetchReply();
+          await sudokuSession.message.delete();
+          const reply = await sudokuSession.exitViewingMode(mes);
+          await i.editReply(reply);
           break;
       }
     });
