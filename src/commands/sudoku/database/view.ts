@@ -63,7 +63,7 @@ export const view: SlashCommand = {
     const collector = response.createMessageComponentCollector({
       filter: collectionFilter,
       componentType: ComponentType.Button,
-      time: 3_600_000
+      time: 600_000
     });
 
     // listen for button presses in view menu
@@ -90,6 +90,17 @@ export const view: SlashCommand = {
           await i.editReply(exitReply);
           break;
       }
+    });
+
+    // handle collector timeout
+    collector.on('end', async () => {
+      await sudokuSession.message.delete();
+      await interaction.followUp('Loading...').then( async msg => {
+        msg.edit({
+          content: "",
+          ...(await sudokuSession.exitViewingMode(msg))
+        });
+      });
     });
 
   }
