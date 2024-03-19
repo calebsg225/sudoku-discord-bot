@@ -14,4 +14,6 @@ type PuzzleData = {
   pencilMarkings: string
 }
 
-export { Theme, PuzzleData };
+type ViewModeType = "Completed" | "Saved";
+
+export { Theme, PuzzleData, ViewModeType };

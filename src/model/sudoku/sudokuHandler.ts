@@ -1,7 +1,7 @@
 import SudokuIamgeHandler from "./sudokuImageGeneration";
 import SudokuSolver from "./sudokuSolver";
 import SudokuDatabaseHandler from "./sudokuDatabase";
-import { PuzzleData } from "./types/sudokuTypes";
+import { PuzzleData, ViewModeType } from "./types/sudokuTypes";
 import { ActionRowBuilder, AttachmentBuilder, ButtonBuilder, ButtonStyle, EmbedBuilder, InteractionReplyOptions, Message, User } from "discord.js";
 import Canvas from "@napi-rs/canvas";
 import fs from "node:fs";
@@ -105,7 +105,7 @@ class SudokuHandler {
   }
 
   // generates embed for viewing saved or completed games
-  private generateViewingEmbed = async (board: Canvas.Canvas, title: string, gameCount: number, viewingType: "Completed" | "Saved") => {
+  private generateViewingEmbed = async (board: Canvas.Canvas, title: string, gameCount: number, viewingType: ViewModeType) => {
     const {embed, attachment} = await this.generateBaseEmbed(board, title);
     embed.setDescription(`Difficulty: \`${this.games[this.viewing].difficulty}\``);
     embed.setFooter({text: `${this.viewing+1}/${gameCount} ${viewingType} Games`});
@@ -322,7 +322,7 @@ class SudokuHandler {
   }
 
   // move left or right
-  shiftGame = async (viewType: "Completed" | "Saved", direction: "left" | "right") => {
+  shiftGame = async (viewType: ViewModeType, direction: "left" | "right") => {
     const theme = await this.database.getTheme();
 
     if (direction === "left") {
@@ -363,7 +363,7 @@ class SudokuHandler {
   }
 
   // delete saved game
-  deleteSavedGame = async (viewType: "Completed" | "Saved") => {}
+  deleteSavedGame = async (viewType: ViewModeType) => {}
 
   // exit viewing mode
   exitViewingMode = async (message: Message) => {
@@ -377,10 +377,21 @@ class SudokuHandler {
     return await this.generateReply(message);
   }
 
+  // verify there is at least one game to view
+  verifyViewData = async (viewType: ViewModeType) => {
+    const games = viewType === "Saved" ? await this.database.getSavedGames() : await this.database.getCompletedGames();
+    if (!games.size) return false;
+
+    this.viewMode = true;
+    this.games = this.generateViewPuzzleData(games);
+    this.viewing = 0;
+    return true;
+  }
+
 
   // main section of [saved] and [completed] discord commands
   // used to view games in database, if any
-  view = async (message: Message, viewType: "Completed" | "Saved") => {
+  view = async (message: Message, viewType: ViewModeType) => {
     this.viewMode = true;
     this.message = message;
 

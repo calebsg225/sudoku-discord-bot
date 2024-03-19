@@ -4,6 +4,7 @@
 import { ButtonInteraction, ComponentType, SlashCommandBuilder} from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
 import { viewChoices } from "../../../model/sudoku/choices";
+import { ViewModeType } from "../../../model/sudoku/types/sudokuTypes";
 
 export const view: SlashCommand = {
   path: 'sudoku/database',
@@ -38,22 +39,27 @@ export const view: SlashCommand = {
       });
     }
     
+    // get game type to view
+    const viewType = interaction.options.getString('type', true);
+    // converting to make typescript happy...
+    const newViewType: ViewModeType = viewType === "Completed" ? "Completed" : "Saved";
+    
+    // verify there is at least one game in selected view type
+    if (!(await sudokuSession.verifyViewData(newViewType))) {
+      return interaction.reply({
+        content: `You have no \`${newViewType}\` games.`,
+        ephemeral: true
+      });
+    }
+    
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
-    const viewType = interaction.options.getString('type', true);
-
-    // converting to make typescript happy...
-    const newViewType: "Saved" | "Completed" = viewType === "Completed" ? "Completed" : "Saved";
-    
     await sudokuSession.message.delete();
-
     const reply = await sudokuSession.view(message, newViewType);
-    
     const response = await interaction.editReply(reply);
 
     const collectionFilter = (i: ButtonInteraction) => {return i.user.id === interaction.user.id};
-
     const collector = response.createMessageComponentCollector({
       filter: collectionFilter,
       componentType: ComponentType.Button,
