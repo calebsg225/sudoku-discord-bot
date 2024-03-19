@@ -82,6 +82,14 @@ export const view: SlashCommand = {
           await i.editReply(loadReply);
           break;
         case ("delete"):
+          if (sudokuSession.hasOne()) {
+            await i.deferReply();
+            await sudokuSession.message.delete();
+            const deleteReply = await sudokuSession.exitViewingMode(await i.fetchReply(), true);
+            await i.editReply(deleteReply);
+          } else {
+            await i.update(await sudokuSession.deleteSavedGame());
+          }
           break;
         case ("exit"):
           await i.deferReply();

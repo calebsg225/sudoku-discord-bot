@@ -363,10 +363,26 @@ class SudokuHandler {
   }
 
   // delete saved game
-  deleteSavedGame = async (viewType: ViewModeType) => {}
+  deleteSavedGame = async () => {
+    await this.database.deleteSavedGame(this.games[this.viewing].defaultPuzzle);
+    this.games.splice(this.viewing, 1);
+    if (this.viewing >= this.games.length) this.viewing--;
+
+    const theme = await this.database.getTheme();
+
+    this.imageHandler.regenerateData(theme, this.games[this.viewing], 0);
+    const board = this.imageHandler.createBoard(theme);
+
+    const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s Saved Games`, this.games.length, "Saved");
+    return {
+      embeds: [embed],
+      files: [attachment]
+    }
+  }
 
   // exit viewing mode
-  exitViewingMode = async (message: Message) => {
+  exitViewingMode = async (message: Message, deleteCurrent: boolean = false) => {
+    if (deleteCurrent) await this.database.deleteSavedGame(this.games[this.viewing].defaultPuzzle);
     const theme = await this.database.getTheme();
 
     this.viewMode = false;
@@ -375,6 +391,10 @@ class SudokuHandler {
 
     this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
     return await this.generateReply(message);
+  }
+
+  hasOne = () => {
+    return this.games.length === 1;
   }
 
   // verify there is at least one game to view
