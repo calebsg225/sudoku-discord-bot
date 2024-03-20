@@ -16,6 +16,7 @@ class SudokuIamgeHandler {
   base: Canvas.Canvas;
   border: Canvas.Canvas;
   board: Canvas.Canvas;
+  theme: string;
 
   constructor() {
     this.font = 'Roboto Mono';
@@ -27,16 +28,16 @@ class SudokuIamgeHandler {
   }
 
   // create empty sudoku board
-  private createBase = (theme: string) => {
+  private createBase = () => {
     this.base = Canvas.createCanvas(this.width, this.width);
     const ctx = this.base.getContext(this.context);
 
     // fill in background
-    ctx.fillStyle = sudokuThemes[theme].background;
+    ctx.fillStyle = sudokuThemes[this.theme].background;
     ctx.fillRect(0, 0, this.width, this.width);
 
     // set base color
-    ctx.strokeStyle = sudokuThemes[theme].base;
+    ctx.strokeStyle = sudokuThemes[this.theme].base;
     
     // thin lines
     ctx.lineWidth = this.lineThickness / 3;
@@ -66,21 +67,21 @@ class SudokuIamgeHandler {
       ctx.stroke();
     }
 
-    this.createBorder(theme);
+    this.createBorder();
   }
 
   // border for sudoku base
-  private createBorder = (theme: string) => {
+  private createBorder = () => {
     this.border = Canvas.createCanvas(this.widthWithBorder, this.widthWithBorder);
     const ctx = this.border.getContext(this.context);
 
-    ctx.fillStyle = sudokuThemes[theme].base;
+    ctx.fillStyle = sudokuThemes[this.theme].base;
     ctx.fillRect(0, 0, this.widthWithBorder, this.widthWithBorder);
   }
 
   // combine all canvases into one
   // returns complete sudoku board
-  createBoard = (theme: string): Canvas.Canvas => {
+  createBoard = (): Canvas.Canvas => {
     const result = Canvas.createCanvas(this.widthWithBorder, this.widthWithBorder);
     const ctx = result.getContext(this.context);
 
@@ -92,7 +93,7 @@ class SudokuIamgeHandler {
   }
 
   // fill empty board with new puzzle data
-  private populateBoard = (theme: string, puzzleData: PuzzleData, highlightedDigit: number): void => {
+  private populateBoard = (puzzleData: PuzzleData, highlightedDigit: number): void => {
     const { currentPuzzle: curPuz, defaultPuzzle: defPuz, pencilMarkings: marks } = puzzleData;
 
     this.board = Canvas.createCanvas(this.width, this.width);
@@ -115,12 +116,12 @@ class SudokuIamgeHandler {
           // set digit color differently for default digits and user inputed digits and highlighted digits
           ctx.fillStyle = 
             highlightedDigit === +curPuz[digitPointer]
-            ? sudokuThemes[theme].highlightedDigit
-            : (+defPuz[digitPointer] ? sudokuThemes[theme].base : sudokuThemes[theme].inputedDigit);
+            ? sudokuThemes[this.theme].highlightedDigit
+            : (+defPuz[digitPointer] ? sudokuThemes[this.theme].base : sudokuThemes[this.theme].inputedDigit);
           ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval );
         } else {
           // fill in pencil markings if any
-          this.populatePencilMarkingsInSquare(theme, i, j, marks.substring(digitPointer*9, digitPointer*9+9), highlightedDigit, ctx);
+          this.populatePencilMarkingsInSquare(i, j, marks.substring(digitPointer*9, digitPointer*9+9), highlightedDigit, ctx);
         }
         digitPointer++;
       }
@@ -129,7 +130,6 @@ class SudokuIamgeHandler {
 
   // generate all pencil markings for one square
   populatePencilMarkingsInSquare = (
-    theme: string,
     row: number,
     col: number,
     pencilMarkings: string,
@@ -138,7 +138,7 @@ class SudokuIamgeHandler {
   ) => {
     pencilMarkings.split('').forEach((digit) => {
       if (+digit) {
-        this.addPencilMarking(theme, +digit-1, row, col, highlightedDigit === +digit, ctx);
+        this.addPencilMarking(+digit-1, row, col, highlightedDigit === +digit, ctx);
       }
     });
   }
@@ -161,7 +161,6 @@ class SudokuIamgeHandler {
   }
   
   addPencilMarking = (
-    theme: string,
     digit: number,
     row: number,
     col: number,
@@ -177,8 +176,8 @@ class SudokuIamgeHandler {
     
     ctx.fillStyle = 
       highlight
-      ? sudokuThemes[theme].highlightedDigit
-      : (isDefault ? sudokuThemes[theme].base : sudokuThemes[theme].inputedDigit);
+      ? sudokuThemes[this.theme].highlightedDigit
+      : (isDefault ? sudokuThemes[this.theme].base : sudokuThemes[this.theme].inputedDigit);
     ctx.font = `${pixelWidth}px ${this.font}`;
     ctx.fillText(`${digit+1}`, xInterval, yInterval);
   }
@@ -202,7 +201,6 @@ class SudokuIamgeHandler {
   }
 
   placeDigit = (
-    theme: string,
     digit: number,
     row: number,
     col: number,
@@ -225,8 +223,8 @@ class SudokuIamgeHandler {
     ctx.font = `${pixelWidth}px ${this.font}`;
     ctx.fillStyle = 
       (highlight
-      ? (sudokuThemes[theme].highlightedDigit)
-      : (isDefault ? sudokuThemes[theme].base : sudokuThemes[theme].inputedDigit));
+      ? (sudokuThemes[this.theme].highlightedDigit)
+      : (isDefault ? sudokuThemes[this.theme].base : sudokuThemes[this.theme].inputedDigit));
     ctx.fillText(`${digit}`, xInterval, yInterval);
   }
 
@@ -245,7 +243,6 @@ class SudokuIamgeHandler {
 
   // changes highlight for single digit or pencil mark
   hightlightDigit = (
-    theme: string,
     digit: number,
     row: number,
     col: number,
@@ -258,26 +255,31 @@ class SudokuIamgeHandler {
     if (isPencil) {
       // highlight pencil digit
       this.removePencilMarking(digit-1, row, col);
-      this.addPencilMarking(theme, digit-1, row, col, !removeHighlight, ...[,], isDefault);
+      this.addPencilMarking(digit-1, row, col, !removeHighlight, ...[,], isDefault);
     } else {
       // highlight regular digit
       this.clearSquare(row, col);
-      this.placeDigit(theme, digit, row, col, !removeHighlight, isDefault);
+      this.placeDigit(digit, row, col, !removeHighlight, isDefault);
     }
+  }
+
+  private changeTheme = (theme: string) => {
+    this.theme = theme;
   }
 
   // regenerates only the data of sudoku puzzle
   // used when a new sudoku is created
   // or when saved or completed games are loaded
-  regenerateData = (theme: string, puzzleData: PuzzleData, highlightedDigit: number): void => {
-    this.populateBoard(theme, puzzleData, highlightedDigit);
+  regenerateData = (puzzleData: PuzzleData, highlightedDigit: number): void => {
+    this.populateBoard(puzzleData, highlightedDigit);
   }
 
   // regenerate new base, border, and board canvases
   // used on session initialization and theme change
   regenerateAll = (theme: string, puzzleData: PuzzleData, highlightedDigit: number): void => {
-    this.createBase(theme);
-    this.populateBoard(theme, puzzleData, highlightedDigit);
+    this.changeTheme(theme);
+    this.createBase();
+    this.populateBoard(puzzleData, highlightedDigit);
   }
 }
 

@@ -42,7 +42,7 @@ export const hl: SlashCommand = {
 
     const digit = interaction.options.getNumber('digit', true);
 
-    await sudokuSession.highlightDigit(digit);
+    sudokuSession.highlightDigit(digit);
 
     await sudokuSession.message.delete();
     const reply = await sudokuSession.generateReply(message);

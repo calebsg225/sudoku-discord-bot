@@ -56,10 +56,9 @@ class SudokuHandler {
   createNewPuzzle = async (difficulty: string) => {
     const savedGames = await this.database.getSavedGames();
     const completedGames = await this.database.getCompletedGames();
-    const theme = await this.database.getTheme();
 
     this.setNewPuzzleData(difficulty, savedGames, completedGames);
-    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
+    this.imageHandler.regenerateData(this.puzzleData, this.highlighted);
   }
 
   private setNewPuzzleData = (difficulty: string, savedGames: Map<string, any>, completedGames: Map<string, any>) => {
@@ -150,7 +149,6 @@ class SudokuHandler {
   // second half id this.generateReply()
   // places a digit at specified location
   placeDigit = async (digit: number, row: number, col: number) => {
-    const theme = await this.database.getTheme();
     [ row, col ] = this.zeroIndex([row, col]);
     const digitIndex = row*9 + col;
     const { currentPuzzle: curPuz, defaultPuzzle: defPuz, pencilMarkings: marks } = this.puzzleData;
@@ -161,17 +159,16 @@ class SudokuHandler {
 
     if (!+curPuz[digitIndex]) {
       // there is no digit in specified location
-      this.imageHandler.placeDigit(theme, digit, row, col, this.highlighted === digit);
+      this.imageHandler.placeDigit(digit, row, col, this.highlighted === digit);
       this.updatePuzzleData('currentPuzzle', `${digit}`, digitIndex);
     }
     else if (+curPuz[digitIndex] === digit) {
       // the digit is already in specified location
-      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(digitIndex*9, digitIndex*9+9), this.highlighted);
+      this.imageHandler.populatePencilMarkingsInSquare(row, col, marks.substring(digitIndex*9, digitIndex*9+9), this.highlighted);
       this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
     }
     else {
-      // 
-      this.imageHandler.placeDigit(theme, digit, row, col, this.isHighlighted());
+      this.imageHandler.placeDigit(digit, row, col, this.isHighlighted());
       this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
     }
   }
@@ -179,15 +176,14 @@ class SudokuHandler {
   // first half of [hl] discord command
   // second half is this.generateReply()
   // highlight specified digit at all locations where digit is visible
-  highlightDigit = async (digit: number) => {
-    const theme = await this.database.getTheme();
+  highlightDigit = (digit: number) => {
 
     if (this.highlighted) {
-      this.highlightLoop(theme, this.highlighted, true);
+      this.highlightLoop(this.highlighted, true);
     }
 
     if (this.highlighted !== digit) {
-      this.highlightLoop(theme, digit);
+      this.highlightLoop(digit);
       this.highlighted = digit;
     } else {
       this.highlighted = 0;
@@ -195,7 +191,7 @@ class SudokuHandler {
     
   }
 
-  private highlightLoop = (theme: string, digit: number, removeHighlight: boolean = false) => {
+  private highlightLoop = (digit: number, removeHighlight: boolean = false) => {
     const { defaultPuzzle: defPuz, currentPuzzle: curPuz, pencilMarkings: marks } = this.puzzleData;
 
     for (let i = 0; i < curPuz.length; i++) {
@@ -206,10 +202,10 @@ class SudokuHandler {
 
       if ( +curPuz[i] === digit ) {
         // highlight main digit
-        this.imageHandler.hightlightDigit(theme, digit, row, col, removeHighlight, false, isDefault);
+        this.imageHandler.hightlightDigit(digit, row, col, removeHighlight, false, isDefault);
       } else if ( !+curPuz[i] && +marks[i*9 + (digit-1)] === digit) {
         // highlight pencil marking
-        this.imageHandler.hightlightDigit(theme, digit, row, col, removeHighlight, true, isDefault);
+        this.imageHandler.hightlightDigit(digit, row, col, removeHighlight, true, isDefault);
       }
 
     }
@@ -229,8 +225,7 @@ class SudokuHandler {
   // first half of [pencil] discord command
   // second half is this.generateReply()
   // add or remove pencil marking with specified digit(s) at specified row and column
-  pencil = async (digits: number[], row: number, col: number) => {
-    const theme = await this.database.getTheme();
+  pencil = (digits: number[], row: number, col: number) => {
     [ row, col ] = this.zeroIndex([row, col]);
     const digitIndex = row*9 + col;
     const pencilGroupIndex = digitIndex*9;
@@ -242,7 +237,7 @@ class SudokuHandler {
 
     if (+curPuz[digitIndex]) {
       this.imageHandler.clearSquare(row, col);
-      this.imageHandler.populatePencilMarkingsInSquare(theme, row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9), this.highlighted);
+      this.imageHandler.populatePencilMarkingsInSquare(row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9), this.highlighted);
       this.updatePuzzleData('currentPuzzle', '0', digitIndex);
     }
 
@@ -251,7 +246,7 @@ class SudokuHandler {
         this.imageHandler.removePencilMarking(digit-1, row, col);
         this.updatePuzzleData('pencilMarkings', '0', pencilGroupIndex + digit-1);
       } else {
-        this.imageHandler.addPencilMarking(theme, digit-1, row, col, this.highlighted === digit);
+        this.imageHandler.addPencilMarking(digit-1, row, col, this.highlighted === digit);
         this.updatePuzzleData('pencilMarkings', `${digit}`, pencilGroupIndex + digit-1);
       }
     }
@@ -260,12 +255,11 @@ class SudokuHandler {
   // first half of [reset] discord command
   // second half is this.generateReply()
   // resets puzzle data
-  resetPuzzle = async () => {
-    const theme = await this.database.getTheme();
+  resetPuzzle = () => {
     this.highlighted = 0;
     this.puzzleData.currentPuzzle = this.puzzleData.defaultPuzzle;
     this.puzzleData.pencilMarkings = this.defaultMarks;
-    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
+    this.imageHandler.regenerateData(this.puzzleData, this.highlighted);
   }
 
   solveSudoku = () => {}
@@ -274,8 +268,7 @@ class SudokuHandler {
   // updates board, updates message, returns an embed to be attached to updated message in discord
   generateReply = async (message: Message) => {
     this.message = message;
-    const theme = await this.database.getTheme();
-    const board = this.imageHandler.createBoard(theme);
+    const board = this.imageHandler.createBoard();
     const title = `@${this.user.displayName}'s Sudoku, Difficulty: \`${this.puzzleData.difficulty}\``;
     const { embed, attachment } = await this.generateBaseEmbed(board, title);
     const reply = {
@@ -325,7 +318,6 @@ class SudokuHandler {
   // [left] and [right] buttons for [view] discord command
   // move left or right
   shiftGame = async (viewType: ViewModeType, direction: "left" | "right") => {
-    const theme = await this.database.getTheme();
 
     if (direction === "left") {
       this.viewing--;
@@ -338,8 +330,8 @@ class SudokuHandler {
         this.viewing = 0;
       }
     }
-    this.imageHandler.regenerateData(theme, this.games[this.viewing], 0);
-    const board = this.imageHandler.createBoard(theme);
+    this.imageHandler.regenerateData(this.games[this.viewing], 0);
+    const board = this.imageHandler.createBoard();
 
     const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s ${viewType} Games`, this.games.length, viewType);
     const updatedReply = {
@@ -352,7 +344,6 @@ class SudokuHandler {
   // [load] button for [view] discord command
   // load saved game
   loadSavedGame = async (message: Message) => {
-    const theme = await this.database.getTheme();
 
     this.puzzleData = this.games[this.viewing];
     this.highlighted = 0;
@@ -361,7 +352,7 @@ class SudokuHandler {
     delete this.games;
     delete this.viewing;
 
-    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
+    this.imageHandler.regenerateData(this.puzzleData, this.highlighted);
     return await this.generateReply(message);
   }
 
@@ -372,10 +363,8 @@ class SudokuHandler {
     this.games.splice(this.viewing, 1);
     if (this.viewing >= this.games.length) this.viewing--;
 
-    const theme = await this.database.getTheme();
-
-    this.imageHandler.regenerateData(theme, this.games[this.viewing], 0);
-    const board = this.imageHandler.createBoard(theme);
+    this.imageHandler.regenerateData(this.games[this.viewing], 0);
+    const board = this.imageHandler.createBoard();
 
     const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s Saved Games`, this.games.length, "Saved");
     return {
@@ -389,13 +378,12 @@ class SudokuHandler {
   // exit viewing mode
   exitViewingMode = async (message: Message, deleteCurrent: boolean = false) => {
     if (deleteCurrent) await this.database.deleteSavedGame(this.games[this.viewing].defaultPuzzle);
-    const theme = await this.database.getTheme();
 
     this.viewMode = false;
     delete this.games;
     delete this.viewing;
 
-    this.imageHandler.regenerateData(theme, this.puzzleData, this.highlighted);
+    this.imageHandler.regenerateData(this.puzzleData, this.highlighted);
     return await this.generateReply(message);
   }
 
@@ -424,14 +412,12 @@ class SudokuHandler {
     this.viewMode = true;
     this.message = message;
 
-    const theme = await this.database.getTheme();
-
     this.games = this.generateViewPuzzleData(viewType === "Saved" ? await this.database.getSavedGames() : await this.database.getCompletedGames());
     this.viewing = 0;
 
     // generate first of saved or completed games with no highlights
-    this.imageHandler.regenerateData(theme, this.games[this.viewing], 0);
-    const board = this.imageHandler.createBoard(theme);
+    this.imageHandler.regenerateData(this.games[this.viewing], 0);
+    const board = this.imageHandler.createBoard();
 
     // generate embed and attachment for veiwing menu
     const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s ${viewType} Games`, this.games.length, viewType);

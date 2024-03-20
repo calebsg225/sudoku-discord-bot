@@ -61,7 +61,7 @@ export const pencil: SlashCommand = {
     const message = await interaction.fetchReply();
     
     const [ row, column ] = positionOutput;
-    await sudokuSession.pencil(digitsOutput, row, column);
+    sudokuSession.pencil(digitsOutput, row, column);
 
     await sudokuSession.message.delete();
     const reply = await sudokuSession.generateReply(message);

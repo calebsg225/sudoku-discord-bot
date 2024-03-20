@@ -34,7 +34,7 @@ export const reset: SlashCommand = {
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
-    await sudokuSession.resetPuzzle();
+    sudokuSession.resetPuzzle();
 
     await sudokuSession.message.delete();
     const reply = await sudokuSession.generateReply(message);
