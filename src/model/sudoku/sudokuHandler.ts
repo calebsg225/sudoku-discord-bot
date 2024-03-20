@@ -161,7 +161,7 @@ class SudokuHandler {
 
     if (!+curPuz[digitIndex]) {
       // there is no digit in specified location
-      this.imageHandler.placeDigit(theme, digit, row, col, this.isHighlighted());
+      this.imageHandler.placeDigit(theme, digit, row, col, this.highlighted === digit);
       this.updatePuzzleData('currentPuzzle', `${digit}`, digitIndex);
     }
     else if (+curPuz[digitIndex] === digit) {
