@@ -3,6 +3,7 @@
 import SlashCommand from "../../_interface/SlashCommand";
 import { SlashCommandBuilder } from "discord.js";
 import { difficultyChoices } from "../../../model/sudoku/choices";
+import chalk from "chalk";
 
 export const _new: SlashCommand = {
   path: `sudoku/mechanics`,
@@ -15,6 +16,9 @@ export const _new: SlashCommand = {
         .setDescription('difficulty of the new sudoku puzzle')
         .addChoices(...difficultyChoices)
         .setRequired(true)
+    ).addBooleanOption(option => 
+      option.setName('save')
+        .setDescription('Save your current game?')
     ),
   execute: async (interaction) => {
     const userId = interaction.user.id;
@@ -40,7 +44,18 @@ export const _new: SlashCommand = {
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
+    const saveCurrentGame = interaction.options.getBoolean('save');
     const difficulty = interaction.options.getString('difficulty', true);
+
+    if(saveCurrentGame) {
+      // attempt to save game
+      try {
+        await sudokuSession.saveGame();
+      } catch (error) {
+        console.error(chalk.red(error));
+        return interaction.editReply(`An error occured while trying to save your game.\nA new game was not generated.`);
+      }
+    }
 
     // generate a new puzzle
     await sudokuSession.createNewPuzzle(difficulty);

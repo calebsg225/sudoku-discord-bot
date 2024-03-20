@@ -2,7 +2,6 @@
 
 import { SlashCommandBuilder } from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
-import { decisionChoices } from "../../../model/sudoku/choices";
 import chalk from "chalk";
 
 export const quit: SlashCommand = {
@@ -11,11 +10,9 @@ export const quit: SlashCommand = {
     .setName('quit')
     .setDescription('end your sudoku session')
     .setDMPermission(false)
-    .addStringOption(option => 
+    .addBooleanOption(option => 
       option.setName('save')
         .setDescription('Save your current game?')
-        .addChoices(...decisionChoices)
-        .setRequired(true)
     ),
   execute: async (interaction) => {
     const user = interaction.user;
@@ -32,24 +29,21 @@ export const quit: SlashCommand = {
 
     await interaction.deferReply();
 
-    const saveCurrentGame = interaction.options.getString('save', true);
+    const saveCurrentGame = interaction.options.getBoolean('save');
 
-    if (saveCurrentGame === "1") {
+    if (saveCurrentGame) {
       try {
         // try to save game
         await sudokuSession.saveGame();
         await interaction.editReply(`Your game was saved. Thank you for playing!`);
-        await sudokuSession.message.delete();
-        interaction.client.sudokuSessions.delete(user.id);
       } catch (error) {
         console.error(chalk.red(error));
-        await interaction.editReply(`An error occured while trying to save your game.\nYour session has not ended.`);
+        return interaction.editReply(`An error occured while trying to save your game.\nYour session has not ended.`);
       }
-    } else {
-      await sudokuSession.message.delete();
-      interaction.client.sudokuSessions.delete(user.id);
-      await interaction.editReply(`Thank you for playing!`);
     }
-
+    
+    await sudokuSession.message.delete();
+    interaction.client.sudokuSessions.delete(user.id);
+    
   }
 }
