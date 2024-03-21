@@ -3,10 +3,10 @@
 import { SlashCommandBuilder } from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
 
-export const solve: SlashCommand = {
+export const check: SlashCommand = {
   path: 'sudoku/mechanics',
   data: new SlashCommandBuilder()
-    .setName('solve')
+    .setName('check')
     .setDescription('Check your solution.')
     .setDMPermission(false)
   ,

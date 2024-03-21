@@ -15,7 +15,7 @@ import { hl } from "./sudoku/mechanics/hl";
 import { reset } from "./sudoku/mechanics/reset";
 import { save } from "./sudoku/database/save";
 import { view } from "./sudoku/database/view";
-import { solve } from "./sudoku/database/solve";
+import { check } from "./sudoku/database/check";
 
 // create global commands collection to be mounted to client
 const globalCommands = new Collection<string, SlashCommand>()
@@ -29,7 +29,7 @@ const globalCommands = new Collection<string, SlashCommand>()
   .set(reset.data.name, reset)
   .set(save.data.name, save)
   .set(view.data.name, view)
-  .set(solve.data.name, solve)
+  .set(check.data.name, check)
 
 // create dev commands collection
 const devCommands = new Collection<string, SlashCommand>()
