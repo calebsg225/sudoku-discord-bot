@@ -38,7 +38,7 @@ class SudokuDatabaseHandler {
   }
 
   // add a game to saved games or completed games
-  addGame = async (puzzleData: PuzzleData, completedGame: boolean = false) => {
+  addGame = async (puzzleData: PuzzleData, completedGame: boolean = false): Promise<void> => {
     const sudokuUserData = await this.fetchUserData();
     
     const { defaultPuzzle, currentPuzzle, pencilMarkings, difficulty } = puzzleData;

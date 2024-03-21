@@ -34,11 +34,27 @@ export const check: SlashCommand = {
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
-    // solve here
+    // check solution here
+    const { solved, completedReply, difficulty } = await sudokuSession.checkSudoku();
+    
+    // do nothing but send a message if solution is incorrect
+    if (!solved) {
+      return interaction.editReply(`Your solution is incorrect.`)
+    }
 
     await sudokuSession.message.delete();
+    
+    // completed game attachment with attached message
+    await interaction.channel.send(completedReply);
+
+    await interaction.channel.send(`Here is another \`${difficulty}\` sudoku:`);
+
     const reply = await sudokuSession.generateReply(message);
 
-    await interaction.editReply(reply);
+    // no very clean way to do this but it works
+    await interaction.channel.send(reply).then(msg => {
+      sudokuSession.message = msg;
+    });
+    
   }
 }

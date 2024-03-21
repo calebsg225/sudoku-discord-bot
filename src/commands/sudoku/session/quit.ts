@@ -35,15 +35,17 @@ export const quit: SlashCommand = {
       try {
         // try to save game
         await sudokuSession.saveGame();
+        await sudokuSession.message.delete();
+        interaction.client.sudokuSessions.delete(user.id);
         await interaction.editReply(`Your game was saved. Thank you for playing!`);
       } catch (error) {
         console.error(chalk.red(error));
         return interaction.editReply(`An error occured while trying to save your game.\nYour session has not ended.`);
       }
+    } else {
+      await sudokuSession.message.delete();
+      interaction.client.sudokuSessions.delete(user.id);
+      await interaction.editReply(`Thank you for playing!`);
     }
-    
-    await sudokuSession.message.delete();
-    interaction.client.sudokuSessions.delete(user.id);
-    
   }
 }

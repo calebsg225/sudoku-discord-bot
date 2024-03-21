@@ -57,6 +57,8 @@ class SudokuHandler {
     const savedGames = await this.database.getSavedGames();
     const completedGames = await this.database.getCompletedGames();
 
+    this.highlighted = 0;
+
     this.setNewPuzzleData(difficulty, savedGames, completedGames);
     this.imageHandler.regenerateData(this.puzzleData, this.highlighted);
   }
@@ -93,10 +95,15 @@ class SudokuHandler {
     while ( completedGames.has(randomLine) || savedGames.has(randomLine) );
     return randomLine.substring(13, 94);
   }
+
+  // generate attachment image from puzzle board canvas
+  private generateAttachment = async (board: Canvas.Canvas) => {
+    return new AttachmentBuilder(await board.encode('png'), { name: "sudoku.png" });
+  }
   
   // generates base discord embed used for all scenerios
   private generateBaseEmbed = async (board: Canvas.Canvas, title: string) => {
-    const attachment = new AttachmentBuilder(await board.encode('png'), { name: "sudoku.png" });
+    const attachment = await this.generateAttachment(board);
     const embed = new EmbedBuilder()
       .setTitle(title)
       .setImage('attachment://sudoku.png')
@@ -164,7 +171,7 @@ class SudokuHandler {
     }
     else if (+curPuz[digitIndex] === digit) {
       // the digit is already in specified location
-      this.imageHandler.populatePencilMarkingsInSquare(row, col, marks.substring(digitIndex*9, digitIndex*9+9), this.highlighted);
+      this.imageHandler.populatePencilMarkingsInSquare(row, col, marks.substring(digitIndex*9, digitIndex*9+9), this.highlighted, false);
       this.updatePuzzleData('currentPuzzle', `0`, digitIndex);
     }
     else {
@@ -237,7 +244,7 @@ class SudokuHandler {
 
     if (+curPuz[digitIndex]) {
       this.imageHandler.clearSquare(row, col);
-      this.imageHandler.populatePencilMarkingsInSquare(row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9), this.highlighted);
+      this.imageHandler.populatePencilMarkingsInSquare(row, col, marks.substring(pencilGroupIndex, pencilGroupIndex+9), this.highlighted, false);
       this.updatePuzzleData('currentPuzzle', '0', digitIndex);
     }
 
@@ -246,7 +253,7 @@ class SudokuHandler {
         this.imageHandler.removePencilMarking(digit-1, row, col);
         this.updatePuzzleData('pencilMarkings', '0', pencilGroupIndex + digit-1);
       } else {
-        this.imageHandler.addPencilMarking(digit-1, row, col, this.highlighted === digit);
+        this.imageHandler.addPencilMarking(digit-1, row, col, this.highlighted === digit, false);
         this.updatePuzzleData('pencilMarkings', `${digit}`, pencilGroupIndex + digit-1);
       }
     }
@@ -262,6 +269,32 @@ class SudokuHandler {
     this.imageHandler.regenerateData(this.puzzleData, this.highlighted);
   }
 
+  // first half of [check] discord command
+  // checks that current puzzle is a valid sudoku solution
+  // if so, edits database and generates new puzzle of same difficulty
+  checkSudoku = async () => {
+    const solved = this.solver.check(this.puzzleData.currentPuzzle);
+    if (!solved) return {solved};
+
+    this.imageHandler.regenerateData(this.puzzleData, 0, true);
+    const board = this.imageHandler.createBoard();
+
+    // create attachment of completed game
+    const attachment = await this.generateAttachment(board);
+    const completedReply = {
+      content: `Congratulations, you have completed the Sudoku puzzle!\nYou can view completed games using the \`/view\` command.`,
+      files: [attachment]
+    }
+
+    // remove game from saved games, move to completed
+    await this.database.deleteSavedGame(this.puzzleData.defaultPuzzle);
+    await this.database.addGame(this.puzzleData, true);
+
+    // create a new game of same difficulty
+    this.createNewPuzzle(this.puzzleData.difficulty);
+    return { solved, completedReply, difficulty: this.puzzleData.difficulty };
+  }
+  
   solveSudoku = () => {}
 
   // final part of commands that update puzzle data in some way
@@ -330,7 +363,7 @@ class SudokuHandler {
         this.viewing = 0;
       }
     }
-    this.imageHandler.regenerateData(this.games[this.viewing], 0);
+    this.imageHandler.regenerateData(this.games[this.viewing], 0, viewType === "Completed");
     const board = this.imageHandler.createBoard();
 
     const { embed, attachment } = await this.generateViewingEmbed(board, `@${this.user.displayName}'s ${viewType} Games`, this.games.length, viewType);
@@ -404,7 +437,6 @@ class SudokuHandler {
     return true;
   }
 
-
   // main section of [saved] and [completed] discord commands
   // linked to buttons [left] [right] [load] [save] [exit]
   // used to view games in database, if any
@@ -416,7 +448,7 @@ class SudokuHandler {
     this.viewing = 0;
 
     // generate first of saved or completed games with no highlights
-    this.imageHandler.regenerateData(this.games[this.viewing], 0);
+    this.imageHandler.regenerateData(this.games[this.viewing], 0, viewType === "Completed");
     const board = this.imageHandler.createBoard();
 
     // generate embed and attachment for veiwing menu
