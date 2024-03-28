@@ -92,10 +92,11 @@ export const view: SlashCommand = {
           }
           break;
         case ("exit"):
-          await i.deferReply();
+          collector.stop();
+          /* await i.deferReply();
           await sudokuSession.message.delete();
           const exitReply = await sudokuSession.exitViewingMode(await i.fetchReply());
-          await i.editReply(exitReply);
+          await i.editReply(exitReply); */
           break;
       }
     });
@@ -110,6 +111,8 @@ export const view: SlashCommand = {
         });
       });
     });
+
+    
 
   }
 }
