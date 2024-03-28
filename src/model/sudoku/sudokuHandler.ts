@@ -376,17 +376,9 @@ class SudokuHandler {
 
   // [load] button for [view] discord command
   // load saved game
-  loadSavedGame = async (message: Message) => {
-
+  loadSavedGame = async () => {
     this.puzzleData = this.games[this.viewing];
     this.highlighted = 0;
-
-    this.viewMode = false;
-    delete this.games;
-    delete this.viewing;
-
-    this.imageHandler.regenerateData(this.puzzleData, this.highlighted);
-    return await this.generateReply(message);
   }
 
   // [delete] button for [view] discord command
@@ -409,9 +401,7 @@ class SudokuHandler {
   // [exit] button for [view] discord command
   // also the way to exit view mode for [delete] button and timeout
   // exit viewing mode
-  exitViewingMode = async (message: Message, deleteCurrent: boolean = false) => {
-    if (deleteCurrent) await this.database.deleteSavedGame(this.games[this.viewing].defaultPuzzle);
-
+  exitViewingMode = async (message: Message) => {
     this.viewMode = false;
     delete this.games;
     delete this.viewing;
@@ -420,10 +410,10 @@ class SudokuHandler {
     return await this.generateReply(message);
   }
 
-  // check that there is at least one game to view
+  // check if there are no games to view
   // used for [delete] button
-  hasOne = () => {
-    return this.games.length === 1;
+  hasNone = () => {
+    return this.games.length === 0;
   }
 
   // verify there is at least one game to view

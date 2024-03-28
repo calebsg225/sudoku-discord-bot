@@ -63,7 +63,7 @@ export const view: SlashCommand = {
     const collector = response.createMessageComponentCollector({
       filter: collectionFilter,
       componentType: ComponentType.Button,
-      time: 600_000
+      time: 20_000
     });
 
     // listen for button presses in view menu
@@ -76,27 +76,19 @@ export const view: SlashCommand = {
           await i.update(await sudokuSession.shiftGame(newViewType, "right"));
           break;
         case ("load"):
-          await i.deferReply();
-          await sudokuSession.message.delete();
-          const loadReply = await sudokuSession.loadSavedGame(await i.fetchReply());
-          await i.editReply(loadReply);
+          await sudokuSession.loadSavedGame();
+          collector.stop();
           break;
         case ("delete"):
-          if (sudokuSession.hasOne()) {
-            await i.deferReply();
-            await sudokuSession.message.delete();
-            const deleteReply = await sudokuSession.exitViewingMode(await i.fetchReply(), true);
-            await i.editReply(deleteReply);
+          const deleteReply = await sudokuSession.deleteSavedGame();
+          if (sudokuSession.hasNone()) {
+            collector.stop();
           } else {
-            await i.update(await sudokuSession.deleteSavedGame());
+            await i.update(deleteReply);
           }
           break;
         case ("exit"):
           collector.stop();
-          /* await i.deferReply();
-          await sudokuSession.message.delete();
-          const exitReply = await sudokuSession.exitViewingMode(await i.fetchReply());
-          await i.editReply(exitReply); */
           break;
       }
     });
