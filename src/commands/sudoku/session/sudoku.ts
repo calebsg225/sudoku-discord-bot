@@ -1,6 +1,6 @@
 // start a sudoku session
 
-import { SlashCommandBuilder, AttachmentBuilder } from "discord.js";
+import { SlashCommandBuilder } from "discord.js";
 import SlashCommand from "../../_interface/SlashCommand";
 import SudokuHandler from "../../../model/sudoku/sudokuHandler";
 import { difficultyChoices } from "../../../model/sudoku/choices";

@@ -19,9 +19,9 @@
     "id": "02",
     "background": "#770000",
     "base": "#390000",
-    "inputedDigit": "#dd0000",
+    "inputedDigit": "#c93923",
     "highlightedDigit": "#ff9a2e",
-    "solvedDigit": "#9df38a"
+    "solvedDigit": "#f29f48"
   },
   "blue": {
     "id": "03",

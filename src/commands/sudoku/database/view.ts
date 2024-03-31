@@ -63,7 +63,7 @@ export const view: SlashCommand = {
     const collector = response.createMessageComponentCollector({
       filter: collectionFilter,
       componentType: ComponentType.Button,
-      time: 20_000
+      time: 300_000
     });
 
     // listen for button presses in view menu
