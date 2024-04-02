@@ -42,6 +42,8 @@ export const check: SlashCommand = {
       return interaction.editReply(`Your solution is incorrect.`)
     }
 
+    await interaction.deleteReply();
+
     await sudokuSession.message.delete();
     
     // completed game attachment with attached message

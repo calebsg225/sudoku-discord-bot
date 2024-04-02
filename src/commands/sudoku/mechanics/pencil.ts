@@ -15,11 +15,11 @@ export const pencil: SlashCommand = {
         .setMinValue(1)
         .setMaxValue(999999999)
         .setRequired(true)
-    ).addNumberOption(option =>
-      option.setName('position')
-        .setDescription('[row, column], Ex. 13 would be row 1, column 3.')
-        .setMinValue(11)
-        .setMaxValue(99)
+    ).addStringOption(option =>
+      option.setName('positions')
+        .setDescription('[row1, column1, row2, column2, etc...], Ex. 8934 would be row 8, col 9 and row 3, col 4')
+        .setMinLength(2)
+        .setMaxLength(18)
         .setRequired(true)
     )
   ,
@@ -45,14 +45,16 @@ export const pencil: SlashCommand = {
     }
 
     const digits = interaction.options.getNumber('digits', true);
-    const position = interaction.options.getNumber('position', true);
-    const { verified: positionVerified, output: positionOutput } = sudokuSession.verifyInput(position);
-    const { verified: digitsVerified, output: digitsOutput } = sudokuSession.verifyInput(digits, true);
+    const position = interaction.options.getString('positions', true);
+
+    // verify digits and positions data
+    const { verified: positionsVerified, output: positionsOutput } = sudokuSession.verifyInput(position);
+    const { verified: digitsVerified, output: digitsOutput } = sudokuSession.verifyInput(`${digits}`, true);
 
     // verify user has inputed valid data
-    if (!positionVerified || !digitsVerified) {
+    if (!positionsVerified || !digitsVerified || positionsOutput.length%2) {
       return interaction.reply({
-        content: 'The position or digit data you have entered is invalid. Please try again.',
+        content: 'The data you have entered is invalid. Please try again.',
         ephemeral: true
       });
     }
@@ -60,8 +62,11 @@ export const pencil: SlashCommand = {
     await interaction.deferReply();
     const message = await interaction.fetchReply();
     
-    const [ row, column ] = positionOutput;
-    sudokuSession.pencil(digitsOutput, row, column);
+    for (let i = 0; i < positionsOutput.length; i+=2) {
+      const row = positionsOutput[i];
+      const col = positionsOutput[i+1];
+      sudokuSession.pencil(digitsOutput, row, col);
+    }
 
     await sudokuSession.message.delete();
     const reply = await sudokuSession.generateReply(message);

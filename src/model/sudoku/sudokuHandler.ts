@@ -21,6 +21,7 @@ class SudokuHandler {
   viewing: number; // index of game currently being viewed
   games: PuzzleData[]; // games being viewed. Empty if not in viewing mode.
 
+  private digits: Set<string>;
   private puzzleData: PuzzleData;
   private highlighted: number; // digit currently highlighted. 0 if none.
   private defaultMarks: string;
@@ -41,6 +42,7 @@ class SudokuHandler {
     
     this.highlighted = 0;
     this.defaultMarks = "000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000"
+    this.digits = new Set(['1','2', '3', '4', '5', '6', '7', '8', '9']);
 
     this.viewMode = false;
 
@@ -313,12 +315,12 @@ class SudokuHandler {
 
   // make sure command input data is valid
   // removes duplicate nums if desired
-  verifyInput = (input: number, clean: boolean = false): { verified: boolean, output: number[] } => {
-    const digits = clean ? [...new Set(input.toString().split(''))] : input.toString().split('');
+  verifyInput = (input: string, clean: boolean = false): { verified: boolean, output: number[] } => {
+    const digits = clean ? [...new Set(input.split(''))] : input.split('');
     const output = [];
     let verified = true;
     for (const value of digits) {
-      if (!+value) {
+      if (!this.digits.has(value)) {
         verified = false;
         break;
       };

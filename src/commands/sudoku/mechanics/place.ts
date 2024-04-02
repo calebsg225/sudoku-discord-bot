@@ -10,10 +10,17 @@ export const place: SlashCommand = {
     .setDescription('place a digit at specified row and column')
     .setDMPermission(false)
     .addNumberOption(option =>
-      option.setName('position')
-        .setDescription('[digit, row, column], Ex. 789 would be digit 7, row 8, column 9')
-        .setMinValue(111)
-        .setMaxValue(999)
+      option.setName('digit')
+        .setDescription('digit to toggle at specified position(s)')
+        .setMinValue(1)
+        .setMaxValue(9)
+        .setRequired(true)
+    )
+    .addStringOption(option =>
+      option.setName('positions')
+        .setDescription('[row1, column1, row2, column2, etc...], Ex. 8934 would be row 8, col 9 and row 3, col 4')
+        .setMinLength(2)
+        .setMaxLength(18)
         .setRequired(true)
     ),
   execute: async (interaction) => {
@@ -38,12 +45,16 @@ export const place: SlashCommand = {
       });
     }
 
-    const positions = interaction.options.getNumber('position', true);
-    const { verified, output } = sudokuSession.verifyInput(positions);
+    const digit = interaction.options.getNumber('digit', true);
+    const positions = interaction.options.getString('positions', true);
 
-    if (!verified) {
+    // verify digit and position data
+    const { verified: verifiedDigit } = sudokuSession.verifyInput(`${digit}`);
+    const { verified: verifiedPositions, output: positionOutput } = sudokuSession.verifyInput(positions);
+
+    if (!verifiedDigit || !verifiedPositions || positionOutput.length%2) {
       return interaction.reply({
-        content: 'The position data you have entered is invalid. Please try again.',
+        content: 'The data you have entered is invalid. Please try again.',
         ephemeral: true
       });
     }
@@ -51,8 +62,12 @@ export const place: SlashCommand = {
     await interaction.deferReply();
     const message = await interaction.fetchReply();
 
-    const [ digit, row, column ] = output;
-    await sudokuSession.placeDigit(digit, row, column);
+    // for each of the given verified positions, attempt to place given digit
+    for (let i = 0; i < positionOutput.length; i+=2) {
+      const row = positionOutput[i];
+      const col = positionOutput[i+1];
+      await sudokuSession.placeDigit(digit, row, col);
+    };
 
     await sudokuSession.message.delete();
     const reply = await sudokuSession.generateReply(message);
