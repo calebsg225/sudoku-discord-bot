@@ -4,7 +4,7 @@
     "background": "#000000",
     "base": "#414141",
     "inputedDigit": "#4e2e2e",
-    "highlightedDigit": "#b5b5b5",
+    "highlightedDigit": "#959595",
     "solvedDigit": "#376839"
   },
   "light": {
@@ -29,15 +29,15 @@
     "base": "#0e1926",
     "inputedDigit": "#001fa7",
     "highlightedDigit": "#93bae5",
-    "solvedDigit": "#995d62"
+    "solvedDigit": "#4B79B2"
   },
-  "green": {
+  "shrek": {
     "id": "04",
     "background": "#2FA15B",
     "base": "#1D4C0B",
-    "inputedDigit": "#007716",
+    "inputedDigit": "#6C5646",
     "highlightedDigit": "#42ff65",
-    "solvedDigit": "#48C61E"
+    "solvedDigit": "#3A2E23"
   },
   "pink": {
     "id": "05",
