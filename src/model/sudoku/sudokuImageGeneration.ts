@@ -19,7 +19,7 @@ class SudokuIamgeHandler {
   theme: string;
 
   constructor() {
-    this.font = 'Yu Gothic';
+    this.font = 'Segoe UI';
     this.width = 600;
     this.borderThickness = 12;
     this.widthWithBorder = this.width + this.borderThickness*2;
@@ -121,7 +121,7 @@ class SudokuIamgeHandler {
             highlightedDigit === +curPuz[digitPointer]
             ? sudokuThemes[this.theme].highlightedDigit
             : (+defPuz[digitPointer] ? sudokuThemes[this.theme].base : inputColor);
-          ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval + 3 );
+          ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval - 3 );
         } else {
           // fill in pencil markings if any
           this.populatePencilMarkingsInSquare(i, j, marks.substring(digitPointer*9, digitPointer*9+9), highlightedDigit, solved, ctx);
@@ -187,7 +187,7 @@ class SudokuIamgeHandler {
       ? sudokuThemes[this.theme].highlightedDigit
       : (isDefault ? sudokuThemes[this.theme].base : inputColor);
     ctx.font = `bold ${pixelWidth}px ${this.font}`;
-    ctx.fillText(`${digit+1}`, xInterval, yInterval + 1);
+    ctx.fillText(`${digit+1}`, xInterval, yInterval + 0);
   }
   
   removePencilMarking = (
@@ -233,7 +233,7 @@ class SudokuIamgeHandler {
       (highlight
       ? (sudokuThemes[this.theme].highlightedDigit)
       : (isDefault ? sudokuThemes[this.theme].base : sudokuThemes[this.theme].inputedDigit));
-    ctx.fillText(`${digit}`, xInterval, yInterval + 3);
+    ctx.fillText(`${digit}`, xInterval, yInterval - 3);
   }
 
   // remove digit or pencil markings from a square on the sudoku board
