@@ -1,4 +1,4 @@
-import Canvas from "@napi-rs/canvas";
+import Canvas, { GlobalFonts } from "@napi-rs/canvas";
 import { PuzzleData, Theme } from "./types/sudokuTypes";
 import sudokuThemesImport from "../../data/sudokuThemes.json";
 
@@ -19,7 +19,7 @@ class SudokuIamgeHandler {
   theme: string;
 
   constructor() {
-    this.font = 'Roboto Mono';
+    this.font = 'Yu Gothic';
     this.width = 600;
     this.borderThickness = 12;
     this.widthWithBorder = this.width + this.borderThickness*2;
@@ -115,13 +115,13 @@ class SudokuIamgeHandler {
     for (let i = 0; i < 9; i++) {
       for (let j = 0; j < 9; j++) {
         if (+curPuz[digitPointer]) {
-          ctx.font = `${pixelWidth}px ${this.font}`;
+          ctx.font = `bold ${pixelWidth + 10}px ${this.font}`;
           // set digit color differently for default digits and user inputed digits and highlighted digits
           ctx.fillStyle = 
             highlightedDigit === +curPuz[digitPointer]
             ? sudokuThemes[this.theme].highlightedDigit
             : (+defPuz[digitPointer] ? sudokuThemes[this.theme].base : inputColor);
-          ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval );
+          ctx.fillText(curPuz[digitPointer], (j*interval*2) + interval, (i*interval*2) + interval + 3 );
         } else {
           // fill in pencil markings if any
           this.populatePencilMarkingsInSquare(i, j, marks.substring(digitPointer*9, digitPointer*9+9), highlightedDigit, solved, ctx);
@@ -186,8 +186,8 @@ class SudokuIamgeHandler {
       highlight
       ? sudokuThemes[this.theme].highlightedDigit
       : (isDefault ? sudokuThemes[this.theme].base : inputColor);
-    ctx.font = `${pixelWidth}px ${this.font}`;
-    ctx.fillText(`${digit+1}`, xInterval, yInterval);
+    ctx.font = `bold ${pixelWidth}px ${this.font}`;
+    ctx.fillText(`${digit+1}`, xInterval, yInterval + 1);
   }
   
   removePencilMarking = (
@@ -228,12 +228,12 @@ class SudokuIamgeHandler {
     ctx.textAlign = 'center';
     ctx.textBaseline = 'middle';
 
-    ctx.font = `${pixelWidth}px ${this.font}`;
+    ctx.font = `bold ${pixelWidth + 10}px ${this.font}`;
     ctx.fillStyle = 
       (highlight
       ? (sudokuThemes[this.theme].highlightedDigit)
       : (isDefault ? sudokuThemes[this.theme].base : sudokuThemes[this.theme].inputedDigit));
-    ctx.fillText(`${digit}`, xInterval, yInterval);
+    ctx.fillText(`${digit}`, xInterval, yInterval + 3);
   }
 
   // remove digit or pencil markings from a square on the sudoku board
