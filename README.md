@@ -23,24 +23,56 @@ All puzzles are guaranteed to have a single solution.
 
 ### Session Commands
 
-#### sudoku
-  - Use `/sudoku` to begin a sudoku session. No other commands can be used without starting a sudoku session.
-#### quit
+#### /sudoku
+  - Use `/sudoku` to begin a sudoku session. No other commands can be used while not in a sudoku session.
+
+![](./src/design/sudoku_command.PNG)
+  - After selecting a difficulty, your sudoku session will begin!
+
+![](./src/design/sudoku_command_output.PNG)
+#### /quit
   - Use `/quit` to end a sudoku session. This command gives you the option of saving your game before ending the session, if you choose to do so.
 
+![](./src/design/quit_command.PNG)
+
 ### Mechanics Commands
-#### place
-#### pencil
-#### hl
-#### reset
-#### new
+These are the commands you will use to manipulate the sudoku board.
+#### /place
+
+**\*\*All row/column indices are 1 indexed**
+- `/place` takes in the digit you would like to place and the positions where you would like to place it:
+
+![](./src/design/place_command.PNG)
+
+The following `/place` command will place the digit '1' in positions r3c9, r8c7, r9c4, r4c5, and r5c1:
+
+![](./src/design/place_command_example.PNG)
+
+This results in the following board:
+
+![](./src/design/place_command_output.PNG)
+#### /pencil
+#### /hl
+#### /reset
+#### /new
 
 ### Database Commands
 
-#### check
-#### save
-#### view
+#### /check
+#### /save
+#### /view
 
 ### Preferences Commands
 
-#### theme
+#### /theme
+
+- `/theme` takes in the name of the theme you would like to switch to and saves it in the database under 'preferences'. Your chosen theme will now be used for all displayed sudoku boards. `Dark` is set as the default theme.
+
+|Themes||
+|-|-|
+| Dark | ![](./src/design/color_themes/Dark.PNG) |
+| Light | ![](./src/design/color_themes/Light.PNG) |
+| Red | ![](./src/design/color_themes/Red.PNG) |
+| Blue | ![](./src/design/color_themes/Blue.PNG) |
+| Shrek | ![](./src/design/color_themes/Shrek.PNG) |
+| Pink | ![](./src/design/color_themes/Pink.PNG) |
